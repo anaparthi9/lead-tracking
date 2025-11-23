@@ -217,27 +217,12 @@
             font-weight: 600;
         }
 
-        .status-new {
-            background: #bee3f8;
-            color: #2c5282;
-        }
-
-        .status-contacted {
-            background: #fef5e7;
-            color: #975a16;
-        }
-
-        .status-qualified {
+        .status-active {
             background: #c6f6d5;
             color: #22543d;
         }
 
-        .status-converted {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        .status-lost {
+        .status-inactive {
             background: #fed7d7;
             color: #742a2a;
         }
@@ -333,115 +318,130 @@
     <div class="container">
         <!-- Header -->
         <div class="header">
-            <h1>🎯 Lead Tracker</h1>
-            <p>Simple, secure lead management - all data stored locally on your device</p>
+            <h1>⚡ RE Company Tracker</h1>
+            <p>Track renewable energy companies - all data stored locally on your device</p>
         </div>
 
         <!-- Success Message -->
         <div id="successMessage" class="success-message">
-            Lead added successfully! ✓
+            Company added successfully! ✓
         </div>
 
-        <!-- Add New Lead Form -->
+        <!-- Add New Company Form -->
         <div class="card">
-            <h2>➕ Add New Lead</h2>
+            <h2>➕ Add New Company</h2>
             <form id="leadForm">
                 <div class="form-grid">
                     <div class="form-group">
-                        <label for="name">Name *</label>
-                        <input type="text" id="name" required placeholder="John Doe">
+                        <label for="companyName">Company Name *</label>
+                        <input type="text" id="companyName" required placeholder="Sun Pharmaceutical Industries">
                     </div>
                     <div class="form-group">
-                        <label for="email">Email</label>
-                        <input type="email" id="email" placeholder="john@example.com">
+                        <label for="industry">Industry *</label>
+                        <input type="text" id="industry" required placeholder="Pharmaceuticals">
                     </div>
                     <div class="form-group">
-                        <label for="phone">Phone</label>
-                        <input type="tel" id="phone" placeholder="+1 234 567 8900">
+                        <label for="location">Location *</label>
+                        <input type="text" id="location" required placeholder="Mumbai">
                     </div>
                     <div class="form-group">
-                        <label for="company">Company</label>
-                        <input type="text" id="company" placeholder="Acme Inc.">
+                        <label for="reConsumption">RE Consumption</label>
+                        <select id="reConsumption">
+                            <option value="">Select...</option>
+                            <option value="Solar + Storage + Wind">Solar + Storage + Wind</option>
+                            <option value="Solar + Storage">Solar + Storage</option>
+                            <option value="Solar + Wind">Solar + Wind</option>
+                            <option value="Solar">Solar</option>
+                            <option value="Wind">Wind</option>
+                            <option value="Hydro">Hydro</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="capacity">Capacity (MW)</label>
+                        <input type="number" id="capacity" step="0.1" placeholder="9.5">
                     </div>
                     <div class="form-group">
                         <label for="status">Status *</label>
                         <select id="status" required>
-                            <option value="New">New</option>
-                            <option value="Contacted">Contacted</option>
-                            <option value="Qualified">Qualified</option>
-                            <option value="Converted">Converted</option>
-                            <option value="Lost">Lost</option>
+                            <option value="Active">Active</option>
+                            <option value="Inactive">Inactive</option>
                         </select>
                     </div>
-                    <div class="form-group full-width">
-                        <label for="notes">Notes</label>
-                        <textarea id="notes" placeholder="Additional information about this lead..."></textarea>
+                    <div class="form-group">
+                        <label for="model">Model</label>
+                        <select id="model">
+                            <option value="">Select...</option>
+                            <option value="EPC">EPC</option>
+                            <option value="MESCO">MESCO</option>
+                            <option value="PPA">PPA</option>
+                            <option value="CAPEX">CAPEX</option>
+                            <option value="Hybrid">Hybrid</option>
+                        </select>
                     </div>
                 </div>
-                <button type="submit" class="btn btn-primary">Add Lead</button>
+                <button type="submit" class="btn btn-primary">Add Company</button>
             </form>
         </div>
 
         <!-- Statistics -->
         <div class="stats" id="stats">
             <div class="stat-card">
-                <h3 id="totalLeads">0</h3>
-                <p>Total Leads</p>
+                <h3 id="totalCompanies">0</h3>
+                <p>Total Companies</p>
             </div>
             <div class="stat-card">
-                <h3 id="newLeads">0</h3>
-                <p>New Leads</p>
+                <h3 id="activeCompanies">0</h3>
+                <p>Active Companies</p>
             </div>
             <div class="stat-card">
-                <h3 id="convertedLeads">0</h3>
-                <p>Converted</p>
+                <h3 id="totalCapacity">0</h3>
+                <p>Total Capacity (MW)</p>
             </div>
         </div>
 
-        <!-- View Leads -->
+        <!-- View Companies -->
         <div class="card">
-            <h2>📋 All Leads</h2>
+            <h2>📋 All Companies</h2>
 
             <!-- Search and Filter -->
             <div class="search-filter-bar">
                 <div class="search-group">
-                    <input type="text" id="searchInput" placeholder="🔍 Search by name, email, company...">
+                    <input type="text" id="searchInput" placeholder="🔍 Search by company, industry, location...">
                     <select id="filterStatus">
                         <option value="">All Statuses</option>
-                        <option value="New">New</option>
-                        <option value="Contacted">Contacted</option>
-                        <option value="Qualified">Qualified</option>
-                        <option value="Converted">Converted</option>
-                        <option value="Lost">Lost</option>
+                        <option value="Active">Active</option>
+                        <option value="Inactive">Inactive</option>
                     </select>
                 </div>
                 <button class="btn btn-clear" onclick="clearAllLeads()">Clear All Data</button>
             </div>
 
-            <!-- Leads Table -->
+            <!-- Companies Table -->
             <div class="leads-table">
                 <table id="leadsTable">
                     <thead>
                         <tr>
-                            <th>Name</th>
-                            <th>Email</th>
-                            <th>Phone</th>
-                            <th>Company</th>
+                            <th>Sr No</th>
+                            <th>Company Name</th>
+                            <th>Industry</th>
+                            <th>Location</th>
+                            <th>RE Consumption</th>
+                            <th>Capacity (MW)</th>
                             <th>Status</th>
-                            <th>Date Added</th>
+                            <th>Model</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody id="leadsBody">
-                        <!-- Leads will be inserted here -->
+                        <!-- Companies will be inserted here -->
                     </tbody>
                 </table>
                 <div id="emptyState" class="empty-state">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                     </svg>
-                    <h3>No leads yet</h3>
-                    <p>Add your first lead using the form above</p>
+                    <h3>No companies yet</h3>
+                    <p>Add your first company using the form above</p>
                 </div>
             </div>
         </div>
@@ -459,18 +459,19 @@
             localStorage.setItem('leads', JSON.stringify(leads));
         }
 
-        // Add new lead
+        // Add new company
         document.getElementById('leadForm').addEventListener('submit', function(e) {
             e.preventDefault();
 
             const lead = {
                 id: Date.now(),
-                name: document.getElementById('name').value,
-                email: document.getElementById('email').value,
-                phone: document.getElementById('phone').value,
-                company: document.getElementById('company').value,
+                companyName: document.getElementById('companyName').value,
+                industry: document.getElementById('industry').value,
+                location: document.getElementById('location').value,
+                reConsumption: document.getElementById('reConsumption').value,
+                capacity: document.getElementById('capacity').value,
                 status: document.getElementById('status').value,
-                notes: document.getElementById('notes').value,
+                model: document.getElementById('model').value,
                 dateAdded: new Date().toLocaleDateString()
             };
 
@@ -493,9 +494,9 @@
             updateStats();
         });
 
-        // Delete lead
+        // Delete company
         function deleteLead(id) {
-            if (confirm('Are you sure you want to delete this lead?')) {
+            if (confirm('Are you sure you want to delete this company?')) {
                 let leads = getLeads();
                 leads = leads.filter(lead => lead.id !== id);
                 saveLeads(leads);
@@ -504,9 +505,9 @@
             }
         }
 
-        // Clear all leads
+        // Clear all companies
         function clearAllLeads() {
-            if (confirm('Are you sure you want to delete ALL leads? This cannot be undone!')) {
+            if (confirm('Are you sure you want to delete ALL companies? This cannot be undone!')) {
                 localStorage.removeItem('leads');
                 displayLeads();
                 updateStats();
@@ -516,28 +517,26 @@
         // Get status badge class
         function getStatusClass(status) {
             const statusMap = {
-                'New': 'status-new',
-                'Contacted': 'status-contacted',
-                'Qualified': 'status-qualified',
-                'Converted': 'status-converted',
-                'Lost': 'status-lost'
+                'Active': 'status-active',
+                'Inactive': 'status-inactive'
             };
-            return statusMap[status] || 'status-new';
+            return statusMap[status] || 'status-active';
         }
 
-        // Display leads
+        // Display companies
         function displayLeads() {
             const leads = getLeads();
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
             const filterStatus = document.getElementById('filterStatus').value;
 
-            // Filter leads
+            // Filter companies
             let filteredLeads = leads.filter(lead => {
                 const matchesSearch =
-                    lead.name.toLowerCase().includes(searchTerm) ||
-                    lead.email.toLowerCase().includes(searchTerm) ||
-                    lead.company.toLowerCase().includes(searchTerm) ||
-                    lead.phone.toLowerCase().includes(searchTerm);
+                    (lead.companyName || '').toLowerCase().includes(searchTerm) ||
+                    (lead.industry || '').toLowerCase().includes(searchTerm) ||
+                    (lead.location || '').toLowerCase().includes(searchTerm) ||
+                    (lead.reConsumption || '').toLowerCase().includes(searchTerm) ||
+                    (lead.model || '').toLowerCase().includes(searchTerm);
 
                 const matchesStatus = !filterStatus || lead.status === filterStatus;
 
@@ -557,14 +556,16 @@
             table.style.display = 'table';
             emptyState.style.display = 'none';
 
-            tbody.innerHTML = filteredLeads.map(lead => `
+            tbody.innerHTML = filteredLeads.map((lead, index) => `
                 <tr>
-                    <td><strong>${lead.name}</strong></td>
-                    <td>${lead.email || '-'}</td>
-                    <td>${lead.phone || '-'}</td>
-                    <td>${lead.company || '-'}</td>
+                    <td>${index + 1}</td>
+                    <td><strong>${lead.companyName}</strong></td>
+                    <td>${lead.industry}</td>
+                    <td>${lead.location}</td>
+                    <td>${lead.reConsumption || '-'}</td>
+                    <td>${lead.capacity || '-'}</td>
                     <td><span class="status-badge ${getStatusClass(lead.status)}">${lead.status}</span></td>
-                    <td>${lead.dateAdded}</td>
+                    <td>${lead.model || '-'}</td>
                     <td>
                         <div class="actions">
                             <button class="btn btn-danger" onclick="deleteLead(${lead.id})">Delete</button>
@@ -577,9 +578,15 @@
         // Update statistics
         function updateStats() {
             const leads = getLeads();
-            document.getElementById('totalLeads').textContent = leads.length;
-            document.getElementById('newLeads').textContent = leads.filter(l => l.status === 'New').length;
-            document.getElementById('convertedLeads').textContent = leads.filter(l => l.status === 'Converted').length;
+            document.getElementById('totalCompanies').textContent = leads.length;
+            document.getElementById('activeCompanies').textContent = leads.filter(l => l.status === 'Active').length;
+
+            // Calculate total capacity
+            const totalCapacity = leads.reduce((sum, l) => {
+                const capacity = parseFloat(l.capacity) || 0;
+                return sum + capacity;
+            }, 0);
+            document.getElementById('totalCapacity').textContent = totalCapacity.toFixed(1);
         }
 
         // Search and filter event listeners
