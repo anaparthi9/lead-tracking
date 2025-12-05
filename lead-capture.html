@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Submit Your Inquiry - Vyomaa Energy</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #1C242E 0%, #2a3744 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 15px 15px 0 0;
+            text-align: center;
+        }
+
+        .logo-text {
+            font-size: 38px;
+            font-weight: 800;
+            color: #1C242E;
+            letter-spacing: -1px;
+            margin-bottom: 5px;
+        }
+
+        .logo-text .highlight {
+            color: #56D54F;
+        }
+
+        .logo-subtitle {
+            font-size: 14px;
+            color: #56D54F;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            color: #1C242E;
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 15px;
+            line-height: 1.6;
+        }
+
+        .form-card {
+            background: white;
+            padding: 35px;
+            border-radius: 0 0 15px 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .form-section {
+            margin-bottom: 30px;
+        }
+
+        .form-section:last-of-type {
+            margin-bottom: 0;
+        }
+
+        .section-title {
+            color: #1C242E;
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #56D54F;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            color: #555;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .form-group label .required {
+            color: #FC702F;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 13px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 15px;
+            font-family: inherit;
+            transition: all 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #56D54F;
+            box-shadow: 0 0 0 3px rgba(86, 213, 79, 0.1);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 16px;
+            background: #56D54F;
+            color: #1C242E;
+            border: none;
+            border-radius: 10px;
+            font-size: 17px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 10px;
+        }
+
+        .btn-submit:hover {
+            background: #4ac043;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(86, 213, 79, 0.3);
+        }
+
+        .btn-submit:active {
+            transform: translateY(0);
+        }
+
+        .success-message {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            text-align: center;
+            display: none;
+            animation: slideIn 0.4s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .success-message .icon {
+            width: 80px;
+            height: 80px;
+            background: #56D54F;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 40px;
+        }
+
+        .success-message h2 {
+            color: #1C242E;
+            font-size: 28px;
+            margin-bottom: 15px;
+        }
+
+        .success-message p {
+            color: #666;
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 25px;
+        }
+
+        .btn-back {
+            padding: 12px 30px;
+            background: white;
+            color: #1C242E;
+            border: 2px solid #56D54F;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-back:hover {
+            background: #f0fdf0;
+        }
+
+        .footer-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .footer-link a {
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+            opacity: 0.9;
+            transition: opacity 0.3s;
+        }
+
+        .footer-link a:hover {
+            opacity: 1;
+            text-decoration: underline;
+        }
+
+        .show {
+            display: block !important;
+        }
+
+        .hide {
+            display: none !important;
+        }
+
+        @media (max-width: 600px) {
+            .form-card {
+                padding: 25px 20px;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .header {
+                padding: 25px 20px;
+            }
+
+            .logo-text {
+                font-size: 32px;
+            }
+
+            .header h1 {
+                font-size: 22px;
+            }
+
+            .header p {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Form Section -->
+        <div id="formSection">
+            <div class="header">
+                <div class="logo-text">vy<span class="highlight">o</span>maa</div>
+                <div class="logo-subtitle">ENERGY</div>
+                <h1>Let's Power Your Future</h1>
+                <p>Share your details below and our team will reach out to discuss how Vyomaa Energy can help transform your energy needs.</p>
+            </div>
+
+            <div class="form-card">
+                <form id="leadCaptureForm">
+                    <!-- Company Information -->
+                    <div class="form-section">
+                        <div class="section-title">
+                            <span>🏢</span> Company Information
+                        </div>
+                        <div class="form-group">
+                            <label for="companyName">Company Name <span class="required">*</span></label>
+                            <input type="text" id="companyName" required placeholder="Enter your company name">
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="typeOfIndustry">Industry Type <span class="required">*</span></label>
+                                <input type="text" id="typeOfIndustry" required placeholder="e.g., Manufacturing, IT">
+                            </div>
+                            <div class="form-group">
+                                <label for="city">City <span class="required">*</span></label>
+                                <input type="text" id="city" required placeholder="Your city">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="state">State <span class="required">*</span></label>
+                            <input type="text" id="state" required placeholder="Your state">
+                        </div>
+                    </div>
+
+                    <!-- Contact Details -->
+                    <div class="form-section">
+                        <div class="section-title">
+                            <span>👤</span> Contact Details
+                        </div>
+                        <div class="form-group">
+                            <label for="contactName">Full Name <span class="required">*</span></label>
+                            <input type="text" id="contactName" required placeholder="Your full name">
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="email">Email Address <span class="required">*</span></label>
+                                <input type="email" id="email" required placeholder="your@email.com">
+                            </div>
+                            <div class="form-group">
+                                <label for="phone">Phone Number <span class="required">*</span></label>
+                                <input type="tel" id="phone" required placeholder="+91 98765 43210">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="jobTitle">Job Title</label>
+                            <input type="text" id="jobTitle" placeholder="e.g., Operations Manager">
+                        </div>
+                    </div>
+
+                    <!-- Interest & Requirements -->
+                    <div class="form-section">
+                        <div class="section-title">
+                            <span>⚡</span> Your Energy Needs
+                        </div>
+                        <div class="form-group">
+                            <label for="currentInfra">Current Energy Infrastructure</label>
+                            <select id="currentInfra">
+                                <option value="">Select your current setup</option>
+                                <option value="Solar">Solar</option>
+                                <option value="Battery">Battery Storage</option>
+                                <option value="Solar + Battery">Solar + Battery</option>
+                                <option value="None">None (Looking to install)</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="capacity">Estimated Capacity Needed (kWp)</label>
+                                <input type="number" id="capacity" step="0.1" placeholder="e.g., 100">
+                            </div>
+                            <div class="form-group">
+                                <label for="model">Preferred Model</label>
+                                <select id="model">
+                                    <option value="">Select a model</option>
+                                    <option value="EPC">EPC</option>
+                                    <option value="MESCO">MESCO</option>
+                                    <option value="PPA">PPA</option>
+                                    <option value="CAPEX">CAPEX</option>
+                                    <option value="Not Sure">Not Sure</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="remarks">Additional Information</label>
+                            <textarea id="remarks" placeholder="Tell us more about your energy needs or any specific requirements..."></textarea>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-submit">Submit Inquiry</button>
+                </form>
+            </div>
+
+            <div class="footer-link">
+                <a href="login.html">← Back to Login</a>
+            </div>
+        </div>
+
+        <!-- Success Message -->
+        <div id="successSection" class="success-message">
+            <div class="icon">✓</div>
+            <h2>Thank You!</h2>
+            <p>Your inquiry has been successfully submitted. Our team at Vyomaa Energy will review your information and contact you within 24-48 hours.</p>
+            <p style="color: #56D54F; font-weight: 600; margin-bottom: 30px;">We're excited to power your future!</p>
+            <a href="lead-capture.html" class="btn-back">Submit Another Inquiry</a>
+            <div style="margin-top: 15px;">
+                <a href="login.html" class="btn-back">Go to Login</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('leadCaptureForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            // Create lead object
+            const lead = {
+                id: Date.now(),
+                companyName: document.getElementById('companyName').value,
+                typeOfIndustry: document.getElementById('typeOfIndustry').value,
+                contactName: document.getElementById('contactName').value,
+                jobTitle: document.getElementById('jobTitle').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                state: document.getElementById('state').value,
+                city: document.getElementById('city').value,
+                currentInfra: document.getElementById('currentInfra').value,
+                capacity: document.getElementById('capacity').value,
+                model: document.getElementById('model').value,
+                remarks: document.getElementById('remarks').value,
+                // Auto-filled fields for new leads
+                leadSource: 'Website',
+                leadQStatus: 'In Review',
+                segmentTier: 'B',
+                leadStatus: 'Warm',
+                step: '0',
+                dateAdded: new Date().toLocaleDateString(),
+                lastContactedDate: new Date().toISOString().split('T')[0]
+            };
+
+            // Get existing leads
+            const leads = localStorage.getItem('crm_leads');
+            const leadsArray = leads ? JSON.parse(leads) : [];
+
+            // Add new lead
+            leadsArray.push(lead);
+
+            // Save to localStorage
+            localStorage.setItem('crm_leads', JSON.stringify(leadsArray));
+
+            // Show success message
+            document.getElementById('formSection').classList.add('hide');
+            document.getElementById('successSection').classList.add('show');
+
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    </script>
+</body>
+</html>
