@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 250" fill="none">
+  <!-- "vy" text in dark -->
+  <text x="0" y="180" font-family="Arial, sans-serif" font-size="170" font-weight="800" fill="#1C242E" letter-spacing="-5">vy</text>
+
+  <!-- Green circle for "o" -->
+  <ellipse cx="450" cy="105" rx="85" ry="88" fill="#7ED321"/>
+
+  <!-- "maa" text in dark -->
+  <text x="550" y="180" font-family="Arial, sans-serif" font-size="170" font-weight="800" fill="#1C242E" letter-spacing="-5">maa</text>
+
+  <!-- "ENERGY" text in green -->
+  <text x="935" y="175" font-family="Arial, sans-serif" font-size="65" font-weight="700" fill="#7ED321" letter-spacing="12">ENERGY</text>
+</svg>
