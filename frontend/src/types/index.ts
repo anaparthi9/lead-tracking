@@ -2,15 +2,19 @@
 // VYOMAA ENERGY CRM - FRONTEND TYPE DEFINITIONS
 // =====================================================
 
-// Enums for Lead Management
+// Enums for Lead Management - 11 Lead Qualification Stages
 export enum LeadStatus {
-  NEW = 'New',
-  QUALIFIED = 'Qualified',
-  SITE_SURVEY = 'Site Survey',
-  PROPOSAL = 'Proposal',
-  NEGOTIATION = 'Negotiation',
-  WON = 'Won',
-  LOST = 'Lost'
+  NEW_LEAD = 'New Lead',
+  INITIAL_ASSESSMENT = 'Initial Assessment',
+  FIRST_CONTACT_ATTEMPTED = 'First Contact Attempted',
+  CUSTOMER_INTERACTION_COMPLETED = 'Customer Interaction Completed',
+  IN_PERSON_MEETING_REQUESTED = 'In-person Meeting Requested',
+  DEFERRED_FOLLOW_UP_LATER = 'Deferred - Follow Up Later',
+  INFORMATION_COLLECTION_PENDING = 'Information Collection Pending',
+  TECHNICAL_FEASIBILITY_UNDER_REVIEW = 'Technical Feasibility Under Review',
+  COMMERCIAL_QUALIFICATION = 'Commercial Qualification',
+  QUALIFIED_LEAD = 'Qualified Lead',
+  DISQUALIFIED_NURTURE = 'Disqualified / Nurture'
 }
 
 export enum LeadTemperature {
@@ -173,12 +177,17 @@ export const INDIAN_STATES = [
 ] as const;
 
 export const LEAD_STATUS_ORDER = [
-  LeadStatus.NEW,
-  LeadStatus.QUALIFIED,
-  LeadStatus.SITE_SURVEY,
-  LeadStatus.PROPOSAL,
-  LeadStatus.NEGOTIATION,
-  LeadStatus.WON
+  LeadStatus.NEW_LEAD,
+  LeadStatus.INITIAL_ASSESSMENT,
+  LeadStatus.FIRST_CONTACT_ATTEMPTED,
+  LeadStatus.CUSTOMER_INTERACTION_COMPLETED,
+  LeadStatus.IN_PERSON_MEETING_REQUESTED,
+  LeadStatus.DEFERRED_FOLLOW_UP_LATER,
+  LeadStatus.INFORMATION_COLLECTION_PENDING,
+  LeadStatus.TECHNICAL_FEASIBILITY_UNDER_REVIEW,
+  LeadStatus.COMMERCIAL_QUALIFICATION,
+  LeadStatus.QUALIFIED_LEAD,
+  LeadStatus.DISQUALIFIED_NURTURE
 ];
 
 // =====================================================

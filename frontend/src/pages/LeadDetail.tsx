@@ -172,13 +172,17 @@ export default function LeadDetail() {
 
   const getStatusColor = (status: LeadStatus): 'default' | 'primary' | 'secondary' | 'success' | 'error' | 'warning' | 'info' => {
     const colors: Record<string, 'default' | 'primary' | 'secondary' | 'success' | 'error' | 'warning' | 'info'> = {
-      'New': 'info',
-      'Qualified': 'primary',
-      'Site Survey': 'warning',
-      'Proposal': 'secondary',
-      'Negotiation': 'primary',
-      'Won': 'success',
-      'Lost': 'error',
+      'New Lead': 'info',
+      'Initial Assessment': 'primary',
+      'First Contact Attempted': 'warning',
+      'Customer Interaction Completed': 'info',
+      'In-person Meeting Requested': 'secondary',
+      'Deferred - Follow Up Later': 'warning',
+      'Information Collection Pending': 'default',
+      'Technical Feasibility Under Review': 'secondary',
+      'Commercial Qualification': 'primary',
+      'Qualified Lead': 'success',
+      'Disqualified / Nurture': 'error',
     };
     return colors[status] || 'default';
   };
@@ -837,7 +841,7 @@ export default function LeadDetail() {
                 value={newStatus}
                 onChange={(e) => setNewStatus(e.target.value)}
               >
-                {[...LEAD_STATUS_ORDER, LeadStatus.LOST].map((status) => (
+                {LEAD_STATUS_ORDER.map((status) => (
                   <MenuItem key={status} value={status} disabled={status === lead.lead_status}>
                     {status}
                   </MenuItem>

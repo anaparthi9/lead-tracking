@@ -56,11 +56,7 @@ export default function Pipeline() {
         if (value) cleanFilters[key] = value;
       });
       const response = await leadAPI.getAll(cleanFilters);
-      // Filter out Won and Lost for the pipeline view
-      const pipelineLeads = response.data.filter(
-        lead => lead.lead_status !== LeadStatus.WON && lead.lead_status !== LeadStatus.LOST
-      );
-      setLeads(pipelineLeads);
+      setLeads(response.data);
     } catch (error) {
       console.error('Failed to load leads:', error);
     } finally {
@@ -104,13 +100,17 @@ export default function Pipeline() {
 
   const getStatusColor = (status: LeadStatus) => {
     const colors: Record<string, string> = {
-      'New': '#E8F5E9',
-      'Qualified': '#E3F2FD',
-      'Site Survey': '#FFF3E0',
-      'Proposal': '#F3E5F5',
-      'Negotiation': '#E0F7FA',
-      'Won': '#C8E6C9',
-      'Lost': '#FFCDD2',
+      'New Lead': '#E8F5E9',
+      'Initial Assessment': '#E3F2FD',
+      'First Contact Attempted': '#FFF8E1',
+      'Customer Interaction Completed': '#E1F5FE',
+      'In-person Meeting Requested': '#F3E5F5',
+      'Deferred - Follow Up Later': '#FFF3E0',
+      'Information Collection Pending': '#E0F2F1',
+      'Technical Feasibility Under Review': '#FCE4EC',
+      'Commercial Qualification': '#E8EAF6',
+      'Qualified Lead': '#C8E6C9',
+      'Disqualified / Nurture': '#FFEBEE',
     };
     return colors[status] || '#F5F6F7';
   };
@@ -223,10 +223,10 @@ export default function Pipeline() {
         </Grid>
       </Paper>
 
-      {/* Kanban Board */}
+      {/* Kanban Board - 11 Lead Qualification Stages */}
       <Box sx={{ overflowX: 'auto', pb: 2 }}>
         <Box sx={{ display: 'flex', gap: 2, minWidth: 'max-content' }}>
-          {LEAD_STATUS_ORDER.filter(s => s !== LeadStatus.WON).map((status) => {
+          {LEAD_STATUS_ORDER.map((status) => {
             const statusLeads = getLeadsByStatus(status);
             const totalValue = statusLeads.reduce((sum, lead) => sum + (lead.deal_size_estimate || 0), 0);
             const hotCount = statusLeads.filter(l => l.temperature === LeadTemperature.HOT).length;
@@ -235,11 +235,11 @@ export default function Pipeline() {
               <Box
                 key={status}
                 sx={{
-                  minWidth: { xs: 300, sm: 320 },
-                  maxWidth: { xs: 300, sm: 320 },
+                  minWidth: { xs: 260, sm: 280 },
+                  maxWidth: { xs: 260, sm: 280 },
                   backgroundColor: getStatusColor(status),
                   borderRadius: 3,
-                  p: 2,
+                  p: 1.5,
                   boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
                 }}
               >

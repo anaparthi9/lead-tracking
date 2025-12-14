@@ -104,7 +104,7 @@ export default function LeadForm() {
         deal_size_estimate: formData.deal_size_estimate ? parseFloat(formData.deal_size_estimate) : undefined,
         preferred_model: formData.preferred_model as PreferredModel || undefined,
         temperature: formData.temperature as LeadTemperature,
-        lead_status: LeadStatus.NEW,
+        lead_status: LeadStatus.NEW_LEAD,
       };
 
       const newLead = await leadAPI.create(leadData);
