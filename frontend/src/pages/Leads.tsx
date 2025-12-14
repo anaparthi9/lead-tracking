@@ -27,8 +27,6 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Card,
-  CardContent,
 } from '@mui/material';
 import {
   Search as SearchIcon,
@@ -41,10 +39,6 @@ import {
   Phone as PhoneIcon,
   Email as EmailIcon,
   Visibility as ViewIcon,
-  TrendingUp as TrendingUpIcon,
-  CheckCircle as CheckCircleIcon,
-  Schedule as ScheduleIcon,
-  Business as BusinessIcon,
 } from '@mui/icons-material';
 import { leadAPI } from '../services/api';
 import type { Lead } from '../types';
@@ -57,12 +51,22 @@ import {
   PreferredModel,
 } from '../types';
 
+interface StageCount {
+  name: string;
+  count: number;
+}
+
+interface CategoryStats {
+  total: number;
+  stages: StageCount[];
+}
+
 interface KPIStats {
-  early: number;           // Stages 1-5: New Lead → In-person Meeting Requested
-  hold: number;            // Stages 6-7: Deferred, Info Collection Pending
-  qualification: number;   // Stages 8-10: Tech Review, Commercial, Qualified Lead
-  sales: number;           // Stages 11-13: Proposal Sent, Negotiation, Contract Sent
-  outcome: number;         // Stages 14-16: Won, Lost, Disqualified/Nurture
+  early: CategoryStats;
+  hold: CategoryStats;
+  qualification: CategoryStats;
+  sales: CategoryStats;
+  outcome: CategoryStats;
 }
 
 export default function Leads() {
@@ -75,11 +79,11 @@ export default function Leads() {
   const [search, setSearch] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [stats, setStats] = useState<KPIStats>({
-    early: 0,
-    hold: 0,
-    qualification: 0,
-    sales: 0,
-    outcome: 0,
+    early: { total: 0, stages: [] },
+    hold: { total: 0, stages: [] },
+    qualification: { total: 0, stages: [] },
+    sales: { total: 0, stages: [] },
+    outcome: { total: 0, stages: [] },
   });
   const [filters, setFilters] = useState({
     lead_status: '',
@@ -106,39 +110,48 @@ export default function Leads() {
       const response = await leadAPI.getAll({ limit: 10000 });
       const allLeads = response.data;
 
-      // Calculate KPIs by category
+      // Helper to count leads by status
+      const countByStatus = (status: LeadStatus) =>
+        allLeads.filter(l => l.lead_status === status).length;
+
+      // Calculate KPIs by category with individual stage counts
+      const earlyStages = [
+        { name: 'New Lead', count: countByStatus(LeadStatus.NEW_LEAD) },
+        { name: 'Initial Assessment', count: countByStatus(LeadStatus.INITIAL_ASSESSMENT) },
+        { name: 'First Contact', count: countByStatus(LeadStatus.FIRST_CONTACT_ATTEMPTED) },
+        { name: 'Customer Interaction', count: countByStatus(LeadStatus.CUSTOMER_INTERACTION_COMPLETED) },
+        { name: 'Meeting Requested', count: countByStatus(LeadStatus.IN_PERSON_MEETING_REQUESTED) },
+      ];
+
+      const holdStages = [
+        { name: 'Deferred', count: countByStatus(LeadStatus.DEFERRED_FOLLOW_UP_LATER) },
+        { name: 'Info Pending', count: countByStatus(LeadStatus.INFORMATION_COLLECTION_PENDING) },
+      ];
+
+      const qualificationStages = [
+        { name: 'Tech Review', count: countByStatus(LeadStatus.TECHNICAL_FEASIBILITY_UNDER_REVIEW) },
+        { name: 'Commercial', count: countByStatus(LeadStatus.COMMERCIAL_QUALIFICATION) },
+        { name: 'Qualified', count: countByStatus(LeadStatus.QUALIFIED_LEAD) },
+      ];
+
+      const salesStages = [
+        { name: 'Proposal Sent', count: countByStatus(LeadStatus.PROPOSAL_SENT) },
+        { name: 'Negotiation', count: countByStatus(LeadStatus.NEGOTIATION) },
+        { name: 'Contract Sent', count: countByStatus(LeadStatus.CONTRACT_SENT) },
+      ];
+
+      const outcomeStages = [
+        { name: 'Won', count: countByStatus(LeadStatus.WON) },
+        { name: 'Lost', count: countByStatus(LeadStatus.LOST) },
+        { name: 'Disqualified', count: countByStatus(LeadStatus.DISQUALIFIED_NURTURE) },
+      ];
+
       setStats({
-        // Early Stage (1-5): New Lead, Initial Assessment, First Contact, Customer Interaction, In-person Meeting
-        early: allLeads.filter(l =>
-          l.lead_status === LeadStatus.NEW_LEAD ||
-          l.lead_status === LeadStatus.INITIAL_ASSESSMENT ||
-          l.lead_status === LeadStatus.FIRST_CONTACT_ATTEMPTED ||
-          l.lead_status === LeadStatus.CUSTOMER_INTERACTION_COMPLETED ||
-          l.lead_status === LeadStatus.IN_PERSON_MEETING_REQUESTED
-        ).length,
-        // Hold Stage (6-7): Deferred, Information Collection Pending
-        hold: allLeads.filter(l =>
-          l.lead_status === LeadStatus.DEFERRED_FOLLOW_UP_LATER ||
-          l.lead_status === LeadStatus.INFORMATION_COLLECTION_PENDING
-        ).length,
-        // Qualification (8-10): Tech Feasibility, Commercial Qualification, Qualified Lead
-        qualification: allLeads.filter(l =>
-          l.lead_status === LeadStatus.TECHNICAL_FEASIBILITY_UNDER_REVIEW ||
-          l.lead_status === LeadStatus.COMMERCIAL_QUALIFICATION ||
-          l.lead_status === LeadStatus.QUALIFIED_LEAD
-        ).length,
-        // Sales Stage (11-13): Proposal Sent, Negotiation, Contract Sent
-        sales: allLeads.filter(l =>
-          l.lead_status === LeadStatus.PROPOSAL_SENT ||
-          l.lead_status === LeadStatus.NEGOTIATION ||
-          l.lead_status === LeadStatus.CONTRACT_SENT
-        ).length,
-        // Outcome (14-16): Won, Lost, Disqualified/Nurture
-        outcome: allLeads.filter(l =>
-          l.lead_status === LeadStatus.WON ||
-          l.lead_status === LeadStatus.LOST ||
-          l.lead_status === LeadStatus.DISQUALIFIED_NURTURE
-        ).length,
+        early: { total: earlyStages.reduce((sum, s) => sum + s.count, 0), stages: earlyStages },
+        hold: { total: holdStages.reduce((sum, s) => sum + s.count, 0), stages: holdStages },
+        qualification: { total: qualificationStages.reduce((sum, s) => sum + s.count, 0), stages: qualificationStages },
+        sales: { total: salesStages.reduce((sum, s) => sum + s.count, 0), stages: salesStages },
+        outcome: { total: outcomeStages.reduce((sum, s) => sum + s.count, 0), stages: outcomeStages },
       });
     } catch (error) {
       console.error('Failed to load stats:', error);
@@ -274,119 +287,217 @@ export default function Leads() {
         </Button>
       </Box>
 
-      {/* KPI Cards - 5 cards showing leads by pipeline category with stage details */}
-      <Grid container spacing={2} sx={{ mb: 3 }}>
-        {/* Early Stage */}
-        <Grid item xs={12} sm={6} md={2.4}>
-          <Card sx={{ height: '100%', background: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)' }}>
-            <CardContent sx={{ py: 2 }}>
-              <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 1 }}>
-                <Typography variant="h3" sx={{ fontWeight: 'bold', color: 'white' }}>
-                  {stats.early}
+      {/* KPI Cards - Clean, Modern Pipeline Overview */}
+      <Box sx={{ mb: 4 }}>
+        <Grid container spacing={2}>
+          {/* Early Stage */}
+          <Grid item xs={12} sm={6} md={2.4}>
+            <Paper
+              elevation={0}
+              sx={{
+                p: 2.5,
+                borderRadius: 3,
+                border: '1px solid #e0e0e0',
+                height: '100%',
+                transition: 'all 0.2s ease',
+                '&:hover': {
+                  boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+                  borderColor: '#10b981'
+                }
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: '#10b981' }} />
+                <Typography variant="subtitle2" sx={{ fontWeight: 600, color: '#374151', letterSpacing: 0.5 }}>
+                  EARLY STAGE
                 </Typography>
-                <TrendingUpIcon sx={{ fontSize: 32, color: 'rgba(255,255,255,0.3)' }} />
               </Box>
-              <Typography variant="subtitle1" sx={{ fontWeight: 'bold', color: 'white', mb: 1 }}>
-                Early Stage
+              <Typography variant="h3" sx={{ fontWeight: 700, color: '#10b981', mb: 2 }}>
+                {stats.early.total}
               </Typography>
-              <Box sx={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.85)', lineHeight: 1.4 }}>
-                <Box>1. New Lead</Box>
-                <Box>2. Initial Assessment</Box>
-                <Box>3. First Contact Attempted</Box>
-                <Box>4. Customer Interaction</Box>
-                <Box>5. Meeting Requested</Box>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
+                {stats.early.stages.map((stage, idx) => (
+                  <Box key={idx} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Typography variant="caption" sx={{ color: '#6b7280' }}>
+                      {idx + 1}. {stage.name}
+                    </Typography>
+                    <Typography variant="caption" sx={{ fontWeight: 600, color: '#374151', bgcolor: '#f3f4f6', px: 1, py: 0.25, borderRadius: 1 }}>
+                      {stage.count}
+                    </Typography>
+                  </Box>
+                ))}
               </Box>
-            </CardContent>
-          </Card>
-        </Grid>
+            </Paper>
+          </Grid>
 
-        {/* Hold Stage */}
-        <Grid item xs={12} sm={6} md={2.4}>
-          <Card sx={{ height: '100%', background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)' }}>
-            <CardContent sx={{ py: 2 }}>
-              <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 1 }}>
-                <Typography variant="h3" sx={{ fontWeight: 'bold', color: 'white' }}>
-                  {stats.hold}
+          {/* Hold Stage */}
+          <Grid item xs={12} sm={6} md={2.4}>
+            <Paper
+              elevation={0}
+              sx={{
+                p: 2.5,
+                borderRadius: 3,
+                border: '1px solid #e0e0e0',
+                height: '100%',
+                transition: 'all 0.2s ease',
+                '&:hover': {
+                  boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+                  borderColor: '#f59e0b'
+                }
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: '#f59e0b' }} />
+                <Typography variant="subtitle2" sx={{ fontWeight: 600, color: '#374151', letterSpacing: 0.5 }}>
+                  HOLD / DEFER
                 </Typography>
-                <ScheduleIcon sx={{ fontSize: 32, color: 'rgba(255,255,255,0.3)' }} />
               </Box>
-              <Typography variant="subtitle1" sx={{ fontWeight: 'bold', color: 'white', mb: 1 }}>
-                Hold / Defer
+              <Typography variant="h3" sx={{ fontWeight: 700, color: '#f59e0b', mb: 2 }}>
+                {stats.hold.total}
               </Typography>
-              <Box sx={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.85)', lineHeight: 1.4 }}>
-                <Box>6. Deferred - Follow Up Later</Box>
-                <Box>7. Info Collection Pending</Box>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
+                {stats.hold.stages.map((stage, idx) => (
+                  <Box key={idx} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Typography variant="caption" sx={{ color: '#6b7280' }}>
+                      {idx + 6}. {stage.name}
+                    </Typography>
+                    <Typography variant="caption" sx={{ fontWeight: 600, color: '#374151', bgcolor: '#f3f4f6', px: 1, py: 0.25, borderRadius: 1 }}>
+                      {stage.count}
+                    </Typography>
+                  </Box>
+                ))}
               </Box>
-            </CardContent>
-          </Card>
-        </Grid>
+            </Paper>
+          </Grid>
 
-        {/* Qualification Stage */}
-        <Grid item xs={12} sm={6} md={2.4}>
-          <Card sx={{ height: '100%', background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)' }}>
-            <CardContent sx={{ py: 2 }}>
-              <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 1 }}>
-                <Typography variant="h3" sx={{ fontWeight: 'bold', color: 'white' }}>
-                  {stats.qualification}
+          {/* Qualification Stage */}
+          <Grid item xs={12} sm={6} md={2.4}>
+            <Paper
+              elevation={0}
+              sx={{
+                p: 2.5,
+                borderRadius: 3,
+                border: '1px solid #e0e0e0',
+                height: '100%',
+                transition: 'all 0.2s ease',
+                '&:hover': {
+                  boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+                  borderColor: '#3b82f6'
+                }
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: '#3b82f6' }} />
+                <Typography variant="subtitle2" sx={{ fontWeight: 600, color: '#374151', letterSpacing: 0.5 }}>
+                  QUALIFICATION
                 </Typography>
-                <BusinessIcon sx={{ fontSize: 32, color: 'rgba(255,255,255,0.3)' }} />
               </Box>
-              <Typography variant="subtitle1" sx={{ fontWeight: 'bold', color: 'white', mb: 1 }}>
-                Qualification
+              <Typography variant="h3" sx={{ fontWeight: 700, color: '#3b82f6', mb: 2 }}>
+                {stats.qualification.total}
               </Typography>
-              <Box sx={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.85)', lineHeight: 1.4 }}>
-                <Box>8. Tech Feasibility Review</Box>
-                <Box>9. Commercial Qualification</Box>
-                <Box>10. Qualified Lead</Box>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
+                {stats.qualification.stages.map((stage, idx) => (
+                  <Box key={idx} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Typography variant="caption" sx={{ color: '#6b7280' }}>
+                      {idx + 8}. {stage.name}
+                    </Typography>
+                    <Typography variant="caption" sx={{ fontWeight: 600, color: '#374151', bgcolor: '#f3f4f6', px: 1, py: 0.25, borderRadius: 1 }}>
+                      {stage.count}
+                    </Typography>
+                  </Box>
+                ))}
               </Box>
-            </CardContent>
-          </Card>
-        </Grid>
+            </Paper>
+          </Grid>
 
-        {/* Sales Stage */}
-        <Grid item xs={12} sm={6} md={2.4}>
-          <Card sx={{ height: '100%', background: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)' }}>
-            <CardContent sx={{ py: 2 }}>
-              <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 1 }}>
-                <Typography variant="h3" sx={{ fontWeight: 'bold', color: 'white' }}>
-                  {stats.sales}
+          {/* Sales Stage */}
+          <Grid item xs={12} sm={6} md={2.4}>
+            <Paper
+              elevation={0}
+              sx={{
+                p: 2.5,
+                borderRadius: 3,
+                border: '1px solid #e0e0e0',
+                height: '100%',
+                transition: 'all 0.2s ease',
+                '&:hover': {
+                  boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+                  borderColor: '#8b5cf6'
+                }
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: '#8b5cf6' }} />
+                <Typography variant="subtitle2" sx={{ fontWeight: 600, color: '#374151', letterSpacing: 0.5 }}>
+                  SALES
                 </Typography>
-                <WhatshotIcon sx={{ fontSize: 32, color: 'rgba(255,255,255,0.3)' }} />
               </Box>
-              <Typography variant="subtitle1" sx={{ fontWeight: 'bold', color: 'white', mb: 1 }}>
-                Sales Stage
+              <Typography variant="h3" sx={{ fontWeight: 700, color: '#8b5cf6', mb: 2 }}>
+                {stats.sales.total}
               </Typography>
-              <Box sx={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.85)', lineHeight: 1.4 }}>
-                <Box>11. Proposal Sent</Box>
-                <Box>12. Negotiation</Box>
-                <Box>13. Contract Sent</Box>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
+                {stats.sales.stages.map((stage, idx) => (
+                  <Box key={idx} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Typography variant="caption" sx={{ color: '#6b7280' }}>
+                      {idx + 11}. {stage.name}
+                    </Typography>
+                    <Typography variant="caption" sx={{ fontWeight: 600, color: '#374151', bgcolor: '#f3f4f6', px: 1, py: 0.25, borderRadius: 1 }}>
+                      {stage.count}
+                    </Typography>
+                  </Box>
+                ))}
               </Box>
-            </CardContent>
-          </Card>
-        </Grid>
+            </Paper>
+          </Grid>
 
-        {/* Outcome Stage */}
-        <Grid item xs={12} sm={6} md={2.4}>
-          <Card sx={{ height: '100%', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
-            <CardContent sx={{ py: 2 }}>
-              <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 1 }}>
-                <Typography variant="h3" sx={{ fontWeight: 'bold', color: 'white' }}>
-                  {stats.outcome}
+          {/* Outcome Stage */}
+          <Grid item xs={12} sm={6} md={2.4}>
+            <Paper
+              elevation={0}
+              sx={{
+                p: 2.5,
+                borderRadius: 3,
+                border: '1px solid #e0e0e0',
+                height: '100%',
+                transition: 'all 0.2s ease',
+                '&:hover': {
+                  boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+                  borderColor: '#6366f1'
+                }
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: '#6366f1' }} />
+                <Typography variant="subtitle2" sx={{ fontWeight: 600, color: '#374151', letterSpacing: 0.5 }}>
+                  OUTCOME
                 </Typography>
-                <CheckCircleIcon sx={{ fontSize: 32, color: 'rgba(255,255,255,0.3)' }} />
               </Box>
-              <Typography variant="subtitle1" sx={{ fontWeight: 'bold', color: 'white', mb: 1 }}>
-                Outcome
+              <Typography variant="h3" sx={{ fontWeight: 700, color: '#6366f1', mb: 2 }}>
+                {stats.outcome.total}
               </Typography>
-              <Box sx={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.85)', lineHeight: 1.4 }}>
-                <Box>14. Won</Box>
-                <Box>15. Lost</Box>
-                <Box>16. Disqualified / Nurture</Box>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
+                {stats.outcome.stages.map((stage, idx) => (
+                  <Box key={idx} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Typography variant="caption" sx={{ color: '#6b7280' }}>
+                      {idx + 14}. {stage.name}
+                    </Typography>
+                    <Typography variant="caption" sx={{
+                      fontWeight: 600,
+                      color: stage.name === 'Won' ? '#10b981' : stage.name === 'Lost' ? '#ef4444' : '#374151',
+                      bgcolor: stage.name === 'Won' ? '#d1fae5' : stage.name === 'Lost' ? '#fee2e2' : '#f3f4f6',
+                      px: 1,
+                      py: 0.25,
+                      borderRadius: 1
+                    }}>
+                      {stage.count}
+                    </Typography>
+                  </Box>
+                ))}
               </Box>
-            </CardContent>
-          </Card>
+            </Paper>
+          </Grid>
         </Grid>
-      </Grid>
+      </Box>
 
       {/* Search and Filter Bar */}
       <Paper sx={{ p: 2, mb: 3, borderRadius: 3 }}>
