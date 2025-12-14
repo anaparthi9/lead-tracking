@@ -7,6 +7,7 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Leads from './pages/Leads';
 import LeadDetail from './pages/LeadDetail';
+import LeadForm from './pages/LeadForm';
 import Pipeline from './pages/Pipeline';
 import Layout from './components/Layout';
 
@@ -208,6 +209,7 @@ function App() {
               <Route index element={<Navigate to="/dashboard" replace />} />
               <Route path="dashboard" element={<Dashboard />} />
               <Route path="leads" element={<Leads />} />
+              <Route path="leads/new" element={<LeadForm />} />
               <Route path="leads/:id" element={<LeadDetail />} />
               <Route path="pipeline" element={<Pipeline />} />
             </Route>
