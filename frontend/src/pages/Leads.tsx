@@ -54,6 +54,7 @@ import {
 interface StageCount {
   name: string;
   count: number;
+  status: LeadStatus;
 }
 
 interface CategoryStats {
@@ -115,35 +116,35 @@ export default function Leads() {
         allLeads.filter(l => l.lead_status === status).length;
 
       // Calculate KPIs by category with individual stage counts
-      const earlyStages = [
-        { name: 'New Lead', count: countByStatus(LeadStatus.NEW_LEAD) },
-        { name: 'Initial Assessment', count: countByStatus(LeadStatus.INITIAL_ASSESSMENT) },
-        { name: 'First Contact', count: countByStatus(LeadStatus.FIRST_CONTACT_ATTEMPTED) },
-        { name: 'Customer Interaction', count: countByStatus(LeadStatus.CUSTOMER_INTERACTION_COMPLETED) },
-        { name: 'Meeting Requested', count: countByStatus(LeadStatus.IN_PERSON_MEETING_REQUESTED) },
+      const earlyStages: StageCount[] = [
+        { name: 'New Lead', count: countByStatus(LeadStatus.NEW_LEAD), status: LeadStatus.NEW_LEAD },
+        { name: 'Initial Assessment', count: countByStatus(LeadStatus.INITIAL_ASSESSMENT), status: LeadStatus.INITIAL_ASSESSMENT },
+        { name: 'First Contact', count: countByStatus(LeadStatus.FIRST_CONTACT_ATTEMPTED), status: LeadStatus.FIRST_CONTACT_ATTEMPTED },
+        { name: 'Customer Interaction', count: countByStatus(LeadStatus.CUSTOMER_INTERACTION_COMPLETED), status: LeadStatus.CUSTOMER_INTERACTION_COMPLETED },
+        { name: 'Meeting Requested', count: countByStatus(LeadStatus.IN_PERSON_MEETING_REQUESTED), status: LeadStatus.IN_PERSON_MEETING_REQUESTED },
       ];
 
-      const holdStages = [
-        { name: 'Deferred', count: countByStatus(LeadStatus.DEFERRED_FOLLOW_UP_LATER) },
-        { name: 'Info Pending', count: countByStatus(LeadStatus.INFORMATION_COLLECTION_PENDING) },
+      const holdStages: StageCount[] = [
+        { name: 'Deferred', count: countByStatus(LeadStatus.DEFERRED_FOLLOW_UP_LATER), status: LeadStatus.DEFERRED_FOLLOW_UP_LATER },
+        { name: 'Info Pending', count: countByStatus(LeadStatus.INFORMATION_COLLECTION_PENDING), status: LeadStatus.INFORMATION_COLLECTION_PENDING },
       ];
 
-      const qualificationStages = [
-        { name: 'Tech Review', count: countByStatus(LeadStatus.TECHNICAL_FEASIBILITY_UNDER_REVIEW) },
-        { name: 'Commercial', count: countByStatus(LeadStatus.COMMERCIAL_QUALIFICATION) },
-        { name: 'Qualified', count: countByStatus(LeadStatus.QUALIFIED_LEAD) },
+      const qualificationStages: StageCount[] = [
+        { name: 'Tech Review', count: countByStatus(LeadStatus.TECHNICAL_FEASIBILITY_UNDER_REVIEW), status: LeadStatus.TECHNICAL_FEASIBILITY_UNDER_REVIEW },
+        { name: 'Commercial', count: countByStatus(LeadStatus.COMMERCIAL_QUALIFICATION), status: LeadStatus.COMMERCIAL_QUALIFICATION },
+        { name: 'Qualified', count: countByStatus(LeadStatus.QUALIFIED_LEAD), status: LeadStatus.QUALIFIED_LEAD },
       ];
 
-      const salesStages = [
-        { name: 'Proposal Sent', count: countByStatus(LeadStatus.PROPOSAL_SENT) },
-        { name: 'Negotiation', count: countByStatus(LeadStatus.NEGOTIATION) },
-        { name: 'Contract Sent', count: countByStatus(LeadStatus.CONTRACT_SENT) },
+      const salesStages: StageCount[] = [
+        { name: 'Proposal Sent', count: countByStatus(LeadStatus.PROPOSAL_SENT), status: LeadStatus.PROPOSAL_SENT },
+        { name: 'Negotiation', count: countByStatus(LeadStatus.NEGOTIATION), status: LeadStatus.NEGOTIATION },
+        { name: 'Contract Sent', count: countByStatus(LeadStatus.CONTRACT_SENT), status: LeadStatus.CONTRACT_SENT },
       ];
 
-      const outcomeStages = [
-        { name: 'Won', count: countByStatus(LeadStatus.WON) },
-        { name: 'Lost', count: countByStatus(LeadStatus.LOST) },
-        { name: 'Disqualified', count: countByStatus(LeadStatus.DISQUALIFIED_NURTURE) },
+      const outcomeStages: StageCount[] = [
+        { name: 'Won', count: countByStatus(LeadStatus.WON), status: LeadStatus.WON },
+        { name: 'Lost', count: countByStatus(LeadStatus.LOST), status: LeadStatus.LOST },
+        { name: 'Disqualified', count: countByStatus(LeadStatus.DISQUALIFIED_NURTURE), status: LeadStatus.DISQUALIFIED_NURTURE },
       ];
 
       setStats({
@@ -258,6 +259,11 @@ export default function Leads() {
     return `${value.toLocaleString('en-IN')}`;
   };
 
+  const handleStageClick = (status: LeadStatus) => {
+    setFilters(prev => ({ ...prev, lead_status: status }));
+    setPage(0);
+  };
+
   const clearFilters = () => {
     setFilters({
       lead_status: '',
@@ -315,13 +321,27 @@ export default function Leads() {
               <Typography variant="h3" sx={{ fontWeight: 700, color: '#10b981', mb: 2 }}>
                 {stats.early.total}
               </Typography>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
                 {stats.early.stages.map((stage, idx) => (
-                  <Box key={idx} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Box
+                    key={idx}
+                    onClick={() => handleStageClick(stage.status)}
+                    sx={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      cursor: 'pointer',
+                      p: 0.5,
+                      mx: -0.5,
+                      borderRadius: 1,
+                      transition: 'all 0.15s ease',
+                      '&:hover': { bgcolor: '#f0fdf4' }
+                    }}
+                  >
                     <Typography variant="caption" sx={{ color: '#6b7280' }}>
                       {idx + 1}. {stage.name}
                     </Typography>
-                    <Typography variant="caption" sx={{ fontWeight: 600, color: '#374151', bgcolor: '#f3f4f6', px: 1, py: 0.25, borderRadius: 1 }}>
+                    <Typography variant="caption" sx={{ fontWeight: 600, color: '#374151', bgcolor: '#f3f4f6', px: 1, py: 0.25, borderRadius: 1, minWidth: 24, textAlign: 'center' }}>
                       {stage.count}
                     </Typography>
                   </Box>
@@ -355,13 +375,27 @@ export default function Leads() {
               <Typography variant="h3" sx={{ fontWeight: 700, color: '#f59e0b', mb: 2 }}>
                 {stats.hold.total}
               </Typography>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
                 {stats.hold.stages.map((stage, idx) => (
-                  <Box key={idx} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Box
+                    key={idx}
+                    onClick={() => handleStageClick(stage.status)}
+                    sx={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      cursor: 'pointer',
+                      p: 0.5,
+                      mx: -0.5,
+                      borderRadius: 1,
+                      transition: 'all 0.15s ease',
+                      '&:hover': { bgcolor: '#fffbeb' }
+                    }}
+                  >
                     <Typography variant="caption" sx={{ color: '#6b7280' }}>
                       {idx + 6}. {stage.name}
                     </Typography>
-                    <Typography variant="caption" sx={{ fontWeight: 600, color: '#374151', bgcolor: '#f3f4f6', px: 1, py: 0.25, borderRadius: 1 }}>
+                    <Typography variant="caption" sx={{ fontWeight: 600, color: '#374151', bgcolor: '#f3f4f6', px: 1, py: 0.25, borderRadius: 1, minWidth: 24, textAlign: 'center' }}>
                       {stage.count}
                     </Typography>
                   </Box>
@@ -395,13 +429,27 @@ export default function Leads() {
               <Typography variant="h3" sx={{ fontWeight: 700, color: '#3b82f6', mb: 2 }}>
                 {stats.qualification.total}
               </Typography>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
                 {stats.qualification.stages.map((stage, idx) => (
-                  <Box key={idx} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Box
+                    key={idx}
+                    onClick={() => handleStageClick(stage.status)}
+                    sx={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      cursor: 'pointer',
+                      p: 0.5,
+                      mx: -0.5,
+                      borderRadius: 1,
+                      transition: 'all 0.15s ease',
+                      '&:hover': { bgcolor: '#eff6ff' }
+                    }}
+                  >
                     <Typography variant="caption" sx={{ color: '#6b7280' }}>
                       {idx + 8}. {stage.name}
                     </Typography>
-                    <Typography variant="caption" sx={{ fontWeight: 600, color: '#374151', bgcolor: '#f3f4f6', px: 1, py: 0.25, borderRadius: 1 }}>
+                    <Typography variant="caption" sx={{ fontWeight: 600, color: '#374151', bgcolor: '#f3f4f6', px: 1, py: 0.25, borderRadius: 1, minWidth: 24, textAlign: 'center' }}>
                       {stage.count}
                     </Typography>
                   </Box>
@@ -435,13 +483,27 @@ export default function Leads() {
               <Typography variant="h3" sx={{ fontWeight: 700, color: '#8b5cf6', mb: 2 }}>
                 {stats.sales.total}
               </Typography>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
                 {stats.sales.stages.map((stage, idx) => (
-                  <Box key={idx} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Box
+                    key={idx}
+                    onClick={() => handleStageClick(stage.status)}
+                    sx={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      cursor: 'pointer',
+                      p: 0.5,
+                      mx: -0.5,
+                      borderRadius: 1,
+                      transition: 'all 0.15s ease',
+                      '&:hover': { bgcolor: '#f5f3ff' }
+                    }}
+                  >
                     <Typography variant="caption" sx={{ color: '#6b7280' }}>
                       {idx + 11}. {stage.name}
                     </Typography>
-                    <Typography variant="caption" sx={{ fontWeight: 600, color: '#374151', bgcolor: '#f3f4f6', px: 1, py: 0.25, borderRadius: 1 }}>
+                    <Typography variant="caption" sx={{ fontWeight: 600, color: '#374151', bgcolor: '#f3f4f6', px: 1, py: 0.25, borderRadius: 1, minWidth: 24, textAlign: 'center' }}>
                       {stage.count}
                     </Typography>
                   </Box>
@@ -475,9 +537,23 @@ export default function Leads() {
               <Typography variant="h3" sx={{ fontWeight: 700, color: '#6366f1', mb: 2 }}>
                 {stats.outcome.total}
               </Typography>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
                 {stats.outcome.stages.map((stage, idx) => (
-                  <Box key={idx} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Box
+                    key={idx}
+                    onClick={() => handleStageClick(stage.status)}
+                    sx={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      cursor: 'pointer',
+                      p: 0.5,
+                      mx: -0.5,
+                      borderRadius: 1,
+                      transition: 'all 0.15s ease',
+                      '&:hover': { bgcolor: '#eef2ff' }
+                    }}
+                  >
                     <Typography variant="caption" sx={{ color: '#6b7280' }}>
                       {idx + 14}. {stage.name}
                     </Typography>
@@ -487,7 +563,9 @@ export default function Leads() {
                       bgcolor: stage.name === 'Won' ? '#d1fae5' : stage.name === 'Lost' ? '#fee2e2' : '#f3f4f6',
                       px: 1,
                       py: 0.25,
-                      borderRadius: 1
+                      borderRadius: 1,
+                      minWidth: 24,
+                      textAlign: 'center'
                     }}>
                       {stage.count}
                     </Typography>
