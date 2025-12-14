@@ -60,14 +60,11 @@ import {
 } from '../types';
 
 interface KPIStats {
-  totalLeads: number;
-  earlyStage: number;      // Stages 1-5: New Lead → In-person Meeting Requested
-  holdStage: number;       // Stages 6-7: Deferred, Info Collection Pending
+  early: number;           // Stages 1-5: New Lead → In-person Meeting Requested
+  hold: number;            // Stages 6-7: Deferred, Info Collection Pending
   qualification: number;   // Stages 8-10: Tech Review, Commercial, Qualified Lead
-  salesStage: number;      // Stages 11-13: Proposal Sent, Negotiation, Contract Sent
-  won: number;             // Stage 14: Won
-  lost: number;            // Stage 15: Lost
-  disqualified: number;    // Stage 16: Disqualified / Nurture
+  sales: number;           // Stages 11-13: Proposal Sent, Negotiation, Contract Sent
+  outcome: number;         // Stages 14-16: Won, Lost, Disqualified/Nurture
 }
 
 export default function Leads() {
@@ -80,14 +77,11 @@ export default function Leads() {
   const [search, setSearch] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [stats, setStats] = useState<KPIStats>({
-    totalLeads: 0,
-    earlyStage: 0,
-    holdStage: 0,
+    early: 0,
+    hold: 0,
     qualification: 0,
-    salesStage: 0,
-    won: 0,
-    lost: 0,
-    disqualified: 0,
+    sales: 0,
+    outcome: 0,
   });
   const [filters, setFilters] = useState({
     lead_status: '',
@@ -116,9 +110,8 @@ export default function Leads() {
 
       // Calculate KPIs by category
       setStats({
-        totalLeads: allLeads.length,
         // Early Stage (1-5): New Lead, Initial Assessment, First Contact, Customer Interaction, In-person Meeting
-        earlyStage: allLeads.filter(l =>
+        early: allLeads.filter(l =>
           l.lead_status === LeadStatus.NEW_LEAD ||
           l.lead_status === LeadStatus.INITIAL_ASSESSMENT ||
           l.lead_status === LeadStatus.FIRST_CONTACT_ATTEMPTED ||
@@ -126,7 +119,7 @@ export default function Leads() {
           l.lead_status === LeadStatus.IN_PERSON_MEETING_REQUESTED
         ).length,
         // Hold Stage (6-7): Deferred, Information Collection Pending
-        holdStage: allLeads.filter(l =>
+        hold: allLeads.filter(l =>
           l.lead_status === LeadStatus.DEFERRED_FOLLOW_UP_LATER ||
           l.lead_status === LeadStatus.INFORMATION_COLLECTION_PENDING
         ).length,
@@ -137,15 +130,17 @@ export default function Leads() {
           l.lead_status === LeadStatus.QUALIFIED_LEAD
         ).length,
         // Sales Stage (11-13): Proposal Sent, Negotiation, Contract Sent
-        salesStage: allLeads.filter(l =>
+        sales: allLeads.filter(l =>
           l.lead_status === LeadStatus.PROPOSAL_SENT ||
           l.lead_status === LeadStatus.NEGOTIATION ||
           l.lead_status === LeadStatus.CONTRACT_SENT
         ).length,
-        // Outcome stages
-        won: allLeads.filter(l => l.lead_status === LeadStatus.WON).length,
-        lost: allLeads.filter(l => l.lead_status === LeadStatus.LOST).length,
-        disqualified: allLeads.filter(l => l.lead_status === LeadStatus.DISQUALIFIED_NURTURE).length,
+        // Outcome (14-16): Won, Lost, Disqualified/Nurture
+        outcome: allLeads.filter(l =>
+          l.lead_status === LeadStatus.WON ||
+          l.lead_status === LeadStatus.LOST ||
+          l.lead_status === LeadStatus.DISQUALIFIED_NURTURE
+        ).length,
       });
     } catch (error) {
       console.error('Failed to load stats:', error);
@@ -281,155 +276,114 @@ export default function Leads() {
         </Button>
       </Box>
 
-      {/* KPI Cards - 8 cards in 2 rows showing leads by pipeline category */}
+      {/* KPI Cards - 5 cards showing leads by pipeline category with stage details */}
       <Grid container spacing={2} sx={{ mb: 3 }}>
-        {/* Row 1 */}
-        <Grid item xs={6} sm={3}>
-          <Card sx={{ height: '100%', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
-            <CardContent sx={{ py: 2 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <Box>
-                  <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'white' }}>
-                    {stats.totalLeads}
-                  </Typography>
-                  <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.8)' }}>
-                    Total Leads
-                  </Typography>
-                </Box>
-                <PeopleIcon sx={{ fontSize: 40, color: 'rgba(255,255,255,0.3)' }} />
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={6} sm={3}>
+        {/* Early Stage */}
+        <Grid item xs={12} sm={6} md={2.4}>
           <Card sx={{ height: '100%', background: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)' }}>
             <CardContent sx={{ py: 2 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <Box>
-                  <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'white' }}>
-                    {stats.earlyStage}
-                  </Typography>
-                  <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.8)' }}>
-                    Early Stage
-                  </Typography>
-                  <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.6)' }}>
-                    New to Meeting
-                  </Typography>
-                </Box>
-                <TrendingUpIcon sx={{ fontSize: 40, color: 'rgba(255,255,255,0.3)' }} />
+              <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 1 }}>
+                <Typography variant="h3" sx={{ fontWeight: 'bold', color: 'white' }}>
+                  {stats.early}
+                </Typography>
+                <TrendingUpIcon sx={{ fontSize: 32, color: 'rgba(255,255,255,0.3)' }} />
               </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={6} sm={3}>
-          <Card sx={{ height: '100%', background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)' }}>
-            <CardContent sx={{ py: 2 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <Box>
-                  <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'white' }}>
-                    {stats.holdStage}
-                  </Typography>
-                  <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.8)' }}>
-                    On Hold
-                  </Typography>
-                  <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.6)' }}>
-                    Deferred / Pending
-                  </Typography>
-                </Box>
-                <ScheduleIcon sx={{ fontSize: 40, color: 'rgba(255,255,255,0.3)' }} />
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={6} sm={3}>
-          <Card sx={{ height: '100%', background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)' }}>
-            <CardContent sx={{ py: 2 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <Box>
-                  <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'white' }}>
-                    {stats.qualification}
-                  </Typography>
-                  <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.8)' }}>
-                    Qualification
-                  </Typography>
-                  <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.6)' }}>
-                    Tech & Commercial
-                  </Typography>
-                </Box>
-                <BusinessIcon sx={{ fontSize: 40, color: 'rgba(255,255,255,0.3)' }} />
+              <Typography variant="subtitle1" sx={{ fontWeight: 'bold', color: 'white', mb: 1 }}>
+                Early Stage
+              </Typography>
+              <Box sx={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.85)', lineHeight: 1.4 }}>
+                <Box>1. New Lead</Box>
+                <Box>2. Initial Assessment</Box>
+                <Box>3. First Contact Attempted</Box>
+                <Box>4. Customer Interaction</Box>
+                <Box>5. Meeting Requested</Box>
               </Box>
             </CardContent>
           </Card>
         </Grid>
 
-        {/* Row 2 */}
-        <Grid item xs={6} sm={3}>
+        {/* Hold Stage */}
+        <Grid item xs={12} sm={6} md={2.4}>
+          <Card sx={{ height: '100%', background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)' }}>
+            <CardContent sx={{ py: 2 }}>
+              <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 1 }}>
+                <Typography variant="h3" sx={{ fontWeight: 'bold', color: 'white' }}>
+                  {stats.hold}
+                </Typography>
+                <ScheduleIcon sx={{ fontSize: 32, color: 'rgba(255,255,255,0.3)' }} />
+              </Box>
+              <Typography variant="subtitle1" sx={{ fontWeight: 'bold', color: 'white', mb: 1 }}>
+                Hold / Defer
+              </Typography>
+              <Box sx={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.85)', lineHeight: 1.4 }}>
+                <Box>6. Deferred - Follow Up Later</Box>
+                <Box>7. Info Collection Pending</Box>
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        {/* Qualification Stage */}
+        <Grid item xs={12} sm={6} md={2.4}>
+          <Card sx={{ height: '100%', background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)' }}>
+            <CardContent sx={{ py: 2 }}>
+              <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 1 }}>
+                <Typography variant="h3" sx={{ fontWeight: 'bold', color: 'white' }}>
+                  {stats.qualification}
+                </Typography>
+                <BusinessIcon sx={{ fontSize: 32, color: 'rgba(255,255,255,0.3)' }} />
+              </Box>
+              <Typography variant="subtitle1" sx={{ fontWeight: 'bold', color: 'white', mb: 1 }}>
+                Qualification
+              </Typography>
+              <Box sx={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.85)', lineHeight: 1.4 }}>
+                <Box>8. Tech Feasibility Review</Box>
+                <Box>9. Commercial Qualification</Box>
+                <Box>10. Qualified Lead</Box>
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        {/* Sales Stage */}
+        <Grid item xs={12} sm={6} md={2.4}>
           <Card sx={{ height: '100%', background: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)' }}>
             <CardContent sx={{ py: 2 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <Box>
-                  <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'white' }}>
-                    {stats.salesStage}
-                  </Typography>
-                  <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.8)' }}>
-                    Sales Stage
-                  </Typography>
-                  <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.6)' }}>
-                    Proposal to Contract
-                  </Typography>
-                </Box>
-                <WhatshotIcon sx={{ fontSize: 40, color: 'rgba(255,255,255,0.3)' }} />
+              <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 1 }}>
+                <Typography variant="h3" sx={{ fontWeight: 'bold', color: 'white' }}>
+                  {stats.sales}
+                </Typography>
+                <WhatshotIcon sx={{ fontSize: 32, color: 'rgba(255,255,255,0.3)' }} />
+              </Box>
+              <Typography variant="subtitle1" sx={{ fontWeight: 'bold', color: 'white', mb: 1 }}>
+                Sales Stage
+              </Typography>
+              <Box sx={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.85)', lineHeight: 1.4 }}>
+                <Box>11. Proposal Sent</Box>
+                <Box>12. Negotiation</Box>
+                <Box>13. Contract Sent</Box>
               </Box>
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={6} sm={3}>
-          <Card sx={{ height: '100%', background: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)' }}>
+
+        {/* Outcome Stage */}
+        <Grid item xs={12} sm={6} md={2.4}>
+          <Card sx={{ height: '100%', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
             <CardContent sx={{ py: 2 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <Box>
-                  <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'white' }}>
-                    {stats.won}
-                  </Typography>
-                  <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.8)' }}>
-                    Won Deals
-                  </Typography>
-                </Box>
-                <CheckCircleIcon sx={{ fontSize: 40, color: 'rgba(255,255,255,0.3)' }} />
+              <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 1 }}>
+                <Typography variant="h3" sx={{ fontWeight: 'bold', color: 'white' }}>
+                  {stats.outcome}
+                </Typography>
+                <CheckCircleIcon sx={{ fontSize: 32, color: 'rgba(255,255,255,0.3)' }} />
               </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={6} sm={3}>
-          <Card sx={{ height: '100%', background: 'linear-gradient(135deg, #ff6b6b 0%, #ee5a5a 100%)' }}>
-            <CardContent sx={{ py: 2 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <Box>
-                  <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'white' }}>
-                    {stats.lost}
-                  </Typography>
-                  <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.8)' }}>
-                    Lost Deals
-                  </Typography>
-                </Box>
-                <CancelIcon sx={{ fontSize: 40, color: 'rgba(255,255,255,0.3)' }} />
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={6} sm={3}>
-          <Card sx={{ height: '100%', background: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)' }}>
-            <CardContent sx={{ py: 2 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <Box>
-                  <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#333' }}>
-                    {stats.disqualified}
-                  </Typography>
-                  <Typography variant="body2" sx={{ color: 'rgba(0,0,0,0.6)' }}>
-                    Disqualified / Nurture
-                  </Typography>
-                </Box>
-                <PhoneIcon sx={{ fontSize: 40, color: 'rgba(0,0,0,0.15)' }} />
+              <Typography variant="subtitle1" sx={{ fontWeight: 'bold', color: 'white', mb: 1 }}>
+                Outcome
+              </Typography>
+              <Box sx={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.85)', lineHeight: 1.4 }}>
+                <Box>14. Won</Box>
+                <Box>15. Lost</Box>
+                <Box>16. Disqualified / Nurture</Box>
               </Box>
             </CardContent>
           </Card>
