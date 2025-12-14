@@ -27,6 +27,8 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  Card,
+  CardContent,
 } from '@mui/material';
 import {
   Search as SearchIcon,
@@ -39,32 +41,58 @@ import {
   Phone as PhoneIcon,
   Email as EmailIcon,
   Visibility as ViewIcon,
+  TrendingUp as TrendingUpIcon,
+  People as PeopleIcon,
+  CheckCircle as CheckCircleIcon,
+  Cancel as CancelIcon,
+  Schedule as ScheduleIcon,
+  Business as BusinessIcon,
 } from '@mui/icons-material';
 import { leadAPI } from '../services/api';
 import type { Lead } from '../types';
 import {
   LeadStatus,
   LeadTemperature,
-  LeadGrade,
   LEAD_SOURCES,
   INDUSTRY_SECTORS,
   INDIAN_STATES,
   PreferredModel,
 } from '../types';
 
+interface KPIStats {
+  totalLeads: number;
+  newLeads: number;
+  activeLeads: number;
+  hotLeads: number;
+  qualifiedLeads: number;
+  disqualifiedLeads: number;
+  inProgressLeads: number;
+  pendingFollowUp: number;
+}
+
 export default function Leads() {
   const navigate = useNavigate();
   const [leads, setLeads] = useState<Lead[]>([]);
+  const [allLeadsForStats, setAllLeadsForStats] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(25);
   const [total, setTotal] = useState(0);
   const [search, setSearch] = useState('');
   const [showFilters, setShowFilters] = useState(false);
+  const [stats, setStats] = useState<KPIStats>({
+    totalLeads: 0,
+    newLeads: 0,
+    activeLeads: 0,
+    hotLeads: 0,
+    qualifiedLeads: 0,
+    disqualifiedLeads: 0,
+    inProgressLeads: 0,
+    pendingFollowUp: 0,
+  });
   const [filters, setFilters] = useState({
     lead_status: '',
     temperature: '',
-    lead_grade: '',
     industry_sector: '',
     state: '',
     lead_source: '',
@@ -77,6 +105,39 @@ export default function Leads() {
   useEffect(() => {
     loadLeads();
   }, [page, rowsPerPage, filters]);
+
+  useEffect(() => {
+    loadAllLeadsForStats();
+  }, []);
+
+  const loadAllLeadsForStats = async () => {
+    try {
+      const response = await leadAPI.getAll({ limit: 10000 });
+      const allLeads = response.data;
+      setAllLeadsForStats(allLeads);
+
+      // Calculate KPIs
+      setStats({
+        totalLeads: allLeads.length,
+        newLeads: allLeads.filter(l => l.lead_status === LeadStatus.NEW_LEAD).length,
+        activeLeads: allLeads.filter(l => l.lead_status !== LeadStatus.DISQUALIFIED_NURTURE).length,
+        hotLeads: allLeads.filter(l => l.temperature === LeadTemperature.HOT).length,
+        qualifiedLeads: allLeads.filter(l => l.lead_status === LeadStatus.QUALIFIED_LEAD).length,
+        disqualifiedLeads: allLeads.filter(l => l.lead_status === LeadStatus.DISQUALIFIED_NURTURE).length,
+        inProgressLeads: allLeads.filter(l =>
+          l.lead_status === LeadStatus.FIRST_CONTACT_ATTEMPTED ||
+          l.lead_status === LeadStatus.CUSTOMER_INTERACTION_COMPLETED ||
+          l.lead_status === LeadStatus.TECHNICAL_FEASIBILITY_UNDER_REVIEW
+        ).length,
+        pendingFollowUp: allLeads.filter(l =>
+          l.lead_status === LeadStatus.DEFERRED_FOLLOW_UP_LATER ||
+          l.lead_status === LeadStatus.INFORMATION_COLLECTION_PENDING
+        ).length,
+      });
+    } catch (error) {
+      console.error('Failed to load stats:', error);
+    }
+  };
 
   const loadLeads = async () => {
     try {
@@ -161,16 +222,6 @@ export default function Leads() {
     }
   };
 
-  const getGradeColor = (grade?: LeadGrade) => {
-    switch (grade) {
-      case LeadGrade.A: return '#4caf50';
-      case LeadGrade.B: return '#8bc34a';
-      case LeadGrade.C: return '#ff9800';
-      case LeadGrade.D: return '#f44336';
-      default: return '#9e9e9e';
-    }
-  };
-
   const formatCurrency = (value?: number) => {
     if (!value) return '-';
     if (value >= 10000000) return `${(value / 10000000).toFixed(1)} Cr`;
@@ -182,7 +233,6 @@ export default function Leads() {
     setFilters({
       lead_status: '',
       temperature: '',
-      lead_grade: '',
       industry_sector: '',
       state: '',
       lead_source: '',
@@ -207,6 +257,149 @@ export default function Leads() {
           Add Lead
         </Button>
       </Box>
+
+      {/* KPI Cards - 8 cards in 2 rows */}
+      <Grid container spacing={2} sx={{ mb: 3 }}>
+        {/* Row 1 */}
+        <Grid item xs={6} sm={3}>
+          <Card sx={{ height: '100%', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
+            <CardContent sx={{ py: 2 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <Box>
+                  <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'white' }}>
+                    {stats.totalLeads}
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.8)' }}>
+                    Total Leads
+                  </Typography>
+                </Box>
+                <PeopleIcon sx={{ fontSize: 40, color: 'rgba(255,255,255,0.3)' }} />
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={6} sm={3}>
+          <Card sx={{ height: '100%', background: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)' }}>
+            <CardContent sx={{ py: 2 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <Box>
+                  <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'white' }}>
+                    {stats.newLeads}
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.8)' }}>
+                    New Leads
+                  </Typography>
+                </Box>
+                <TrendingUpIcon sx={{ fontSize: 40, color: 'rgba(255,255,255,0.3)' }} />
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={6} sm={3}>
+          <Card sx={{ height: '100%', background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)' }}>
+            <CardContent sx={{ py: 2 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <Box>
+                  <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'white' }}>
+                    {stats.hotLeads}
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.8)' }}>
+                    Hot Leads
+                  </Typography>
+                </Box>
+                <WhatshotIcon sx={{ fontSize: 40, color: 'rgba(255,255,255,0.3)' }} />
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={6} sm={3}>
+          <Card sx={{ height: '100%', background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)' }}>
+            <CardContent sx={{ py: 2 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <Box>
+                  <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'white' }}>
+                    {stats.activeLeads}
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.8)' }}>
+                    Active Leads
+                  </Typography>
+                </Box>
+                <BusinessIcon sx={{ fontSize: 40, color: 'rgba(255,255,255,0.3)' }} />
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        {/* Row 2 */}
+        <Grid item xs={6} sm={3}>
+          <Card sx={{ height: '100%', background: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)' }}>
+            <CardContent sx={{ py: 2 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <Box>
+                  <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'white' }}>
+                    {stats.inProgressLeads}
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.8)' }}>
+                    In Progress
+                  </Typography>
+                </Box>
+                <ScheduleIcon sx={{ fontSize: 40, color: 'rgba(255,255,255,0.3)' }} />
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={6} sm={3}>
+          <Card sx={{ height: '100%', background: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)' }}>
+            <CardContent sx={{ py: 2 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <Box>
+                  <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#333' }}>
+                    {stats.pendingFollowUp}
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: 'rgba(0,0,0,0.6)' }}>
+                    Pending Follow-up
+                  </Typography>
+                </Box>
+                <PhoneIcon sx={{ fontSize: 40, color: 'rgba(0,0,0,0.15)' }} />
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={6} sm={3}>
+          <Card sx={{ height: '100%', background: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)' }}>
+            <CardContent sx={{ py: 2 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <Box>
+                  <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'white' }}>
+                    {stats.qualifiedLeads}
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.8)' }}>
+                    Qualified
+                  </Typography>
+                </Box>
+                <CheckCircleIcon sx={{ fontSize: 40, color: 'rgba(255,255,255,0.3)' }} />
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={6} sm={3}>
+          <Card sx={{ height: '100%', background: 'linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)' }}>
+            <CardContent sx={{ py: 2 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <Box>
+                  <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#333' }}>
+                    {stats.disqualifiedLeads}
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: 'rgba(0,0,0,0.6)' }}>
+                    Disqualified / Nurture
+                  </Typography>
+                </Box>
+                <CancelIcon sx={{ fontSize: 40, color: 'rgba(0,0,0,0.15)' }} />
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
 
       {/* Search and Filter Bar */}
       <Paper sx={{ p: 2, mb: 3, borderRadius: 3 }}>
@@ -275,21 +468,6 @@ export default function Leads() {
                 <MenuItem value="">All</MenuItem>
                 {Object.values(LeadTemperature).map((temp) => (
                   <MenuItem key={temp} value={temp}>{temp}</MenuItem>
-                ))}
-              </TextField>
-            </Grid>
-            <Grid item xs={12} sm={6} md={3}>
-              <TextField
-                fullWidth
-                select
-                label="Grade"
-                value={filters.lead_grade}
-                onChange={(e) => setFilters({ ...filters, lead_grade: e.target.value })}
-                size="small"
-              >
-                <MenuItem value="">All</MenuItem>
-                {Object.values(LeadGrade).map((grade) => (
-                  <MenuItem key={grade} value={grade}>Grade {grade}</MenuItem>
                 ))}
               </TextField>
             </Grid>
@@ -374,7 +552,6 @@ export default function Leads() {
                   <TableCell sx={{ fontWeight: 'bold' }}>Industry / Sector</TableCell>
                   <TableCell sx={{ fontWeight: 'bold' }}>Status</TableCell>
                   <TableCell sx={{ fontWeight: 'bold' }} align="center">Temp</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold' }} align="center">Grade</TableCell>
                   <TableCell sx={{ fontWeight: 'bold' }} align="right">Consumption</TableCell>
                   <TableCell sx={{ fontWeight: 'bold' }} align="right">Deal Size</TableCell>
                   <TableCell sx={{ fontWeight: 'bold' }}>Source</TableCell>
@@ -384,7 +561,7 @@ export default function Leads() {
               <TableBody>
                 {leads.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={11} align="center" sx={{ py: 4 }}>
+                    <TableCell colSpan={10} align="center" sx={{ py: 4 }}>
                       <Typography color="text.secondary">No leads found</Typography>
                     </TableCell>
                   </TableRow>
@@ -426,22 +603,6 @@ export default function Leads() {
                         <Tooltip title={lead.temperature}>
                           {getTemperatureIcon(lead.temperature)}
                         </Tooltip>
-                      </TableCell>
-                      <TableCell align="center">
-                        {lead.lead_grade ? (
-                          <Chip
-                            label={lead.lead_grade}
-                            size="small"
-                            sx={{
-                              backgroundColor: getGradeColor(lead.lead_grade),
-                              color: 'white',
-                              fontWeight: 'bold',
-                              minWidth: 32,
-                            }}
-                          />
-                        ) : (
-                          '-'
-                        )}
                       </TableCell>
                       <TableCell align="right">
                         {lead.monthly_consumption_kwh

@@ -10,18 +10,24 @@ import {
   Button,
   CircularProgress,
   Divider,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from '@mui/material';
 import {
   ArrowBack as ArrowBackIcon,
   Save as SaveIcon,
+  LocationOn as SiteVisitIcon,
 } from '@mui/icons-material';
-import { leadAPI } from '../services/api';
+import { leadAPI, activityAPI } from '../services/api';
 import {
   LeadTemperature,
   LeadStatus,
   PreferredModel,
   RoofType,
   OwnershipStatus,
+  ActivityType,
   LEAD_SOURCES,
   INDUSTRY_SECTORS,
   INDIAN_STATES,
@@ -34,6 +40,11 @@ export default function LeadEdit() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [siteVisitDialogOpen, setSiteVisitDialogOpen] = useState(false);
+  const [siteVisitData, setSiteVisitData] = useState({
+    notes: '',
+    outcome: '',
+  });
   const [formData, setFormData] = useState({
     company_name: '',
     gstin: '',
@@ -166,6 +177,25 @@ export default function LeadEdit() {
     }
   };
 
+  const handleLogSiteVisit = async () => {
+    try {
+      await activityAPI.create({
+        lead_id: id,
+        activity_type: ActivityType.SITE_VISIT,
+        activity_date: new Date().toISOString(),
+        subject: 'Site Visit',
+        notes: siteVisitData.notes,
+        outcome: siteVisitData.outcome,
+      });
+      setSiteVisitDialogOpen(false);
+      setSiteVisitData({ notes: '', outcome: '' });
+      // Show success or navigate
+      navigate(`/leads/${id}`);
+    } catch (err) {
+      console.error('Failed to log site visit:', err);
+    }
+  };
+
   if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
@@ -176,13 +206,21 @@ export default function LeadEdit() {
 
   return (
     <Box>
-      <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
+      <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <Button
           startIcon={<ArrowBackIcon />}
           onClick={() => navigate(`/leads/${id}`)}
           sx={{ color: 'text.secondary' }}
         >
           Back to Lead
+        </Button>
+        <Button
+          variant="outlined"
+          color="primary"
+          startIcon={<SiteVisitIcon />}
+          onClick={() => setSiteVisitDialogOpen(true)}
+        >
+          Log Site Visit
         </Button>
       </Box>
 
@@ -467,6 +505,49 @@ export default function LeadEdit() {
           </Box>
         </form>
       </Paper>
+
+      {/* Site Visit Dialog */}
+      <Dialog open={siteVisitDialogOpen} onClose={() => setSiteVisitDialogOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Log Site Visit</DialogTitle>
+        <DialogContent>
+          <Grid container spacing={2} sx={{ mt: 1 }}>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                multiline
+                rows={4}
+                label="Site Visit Notes"
+                placeholder="Describe what was observed during the site visit..."
+                value={siteVisitData.notes}
+                onChange={(e) => setSiteVisitData({ ...siteVisitData, notes: e.target.value })}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                select
+                label="Outcome"
+                value={siteVisitData.outcome}
+                onChange={(e) => setSiteVisitData({ ...siteVisitData, outcome: e.target.value })}
+              >
+                <MenuItem value="">Select Outcome</MenuItem>
+                <MenuItem value="Favorable - Ready for proposal">Favorable - Ready for proposal</MenuItem>
+                <MenuItem value="Favorable - Needs more info">Favorable - Needs more info</MenuItem>
+                <MenuItem value="Unfavorable - Technical issues">Unfavorable - Technical issues</MenuItem>
+                <MenuItem value="Unfavorable - Space constraints">Unfavorable - Space constraints</MenuItem>
+                <MenuItem value="Requires follow-up visit">Requires follow-up visit</MenuItem>
+                <MenuItem value="Customer not available">Customer not available</MenuItem>
+              </TextField>
+            </Grid>
+          </Grid>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setSiteVisitDialogOpen(false)}>Cancel</Button>
+          <Button onClick={handleLogSiteVisit} variant="contained" disabled={!siteVisitData.notes}>
+            Log Site Visit
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }
