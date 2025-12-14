@@ -73,7 +73,6 @@ interface KPIStats {
 export default function Leads() {
   const navigate = useNavigate();
   const [leads, setLeads] = useState<Lead[]>([]);
-  const [allLeadsForStats, setAllLeadsForStats] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(25);
@@ -114,7 +113,6 @@ export default function Leads() {
     try {
       const response = await leadAPI.getAll({ limit: 10000 });
       const allLeads = response.data;
-      setAllLeadsForStats(allLeads);
 
       // Closed statuses (not in active pipeline)
       const closedStatuses = [LeadStatus.WON, LeadStatus.LOST, LeadStatus.DISQUALIFIED_NURTURE];
