@@ -42,9 +42,7 @@ import {
   Email as EmailIcon,
   Visibility as ViewIcon,
   TrendingUp as TrendingUpIcon,
-  People as PeopleIcon,
   CheckCircle as CheckCircleIcon,
-  Cancel as CancelIcon,
   Schedule as ScheduleIcon,
   Business as BusinessIcon,
 } from '@mui/icons-material';
