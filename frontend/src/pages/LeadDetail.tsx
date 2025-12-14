@@ -172,16 +172,26 @@ export default function LeadDetail() {
 
   const getStatusColor = (status: LeadStatus): 'default' | 'primary' | 'secondary' | 'success' | 'error' | 'warning' | 'info' => {
     const colors: Record<string, 'default' | 'primary' | 'secondary' | 'success' | 'error' | 'warning' | 'info'> = {
+      // Early Stage
       'New Lead': 'info',
       'Initial Assessment': 'primary',
       'First Contact Attempted': 'warning',
       'Customer Interaction Completed': 'info',
       'In-person Meeting Requested': 'secondary',
+      // Hold/Defer
       'Deferred - Follow Up Later': 'warning',
       'Information Collection Pending': 'default',
+      // Qualification
       'Technical Feasibility Under Review': 'secondary',
       'Commercial Qualification': 'primary',
       'Qualified Lead': 'success',
+      // Sales Stage
+      'Proposal Sent': 'secondary',
+      'Negotiation': 'primary',
+      'Contract Sent': 'info',
+      // Outcome
+      'Won': 'success',
+      'Lost': 'error',
       'Disqualified / Nurture': 'error',
     };
     return colors[status] || 'default';

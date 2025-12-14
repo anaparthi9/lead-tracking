@@ -2,18 +2,28 @@
 // VYOMAA ENERGY CRM - FRONTEND TYPE DEFINITIONS
 // =====================================================
 
-// Enums for Lead Management - 11 Lead Qualification Stages
+// Enums for Lead Management - 16 Lead Qualification Stages (Complete Sales Cycle)
 export enum LeadStatus {
+  // Early Stage
   NEW_LEAD = 'New Lead',
   INITIAL_ASSESSMENT = 'Initial Assessment',
   FIRST_CONTACT_ATTEMPTED = 'First Contact Attempted',
   CUSTOMER_INTERACTION_COMPLETED = 'Customer Interaction Completed',
   IN_PERSON_MEETING_REQUESTED = 'In-person Meeting Requested',
+  // Hold/Defer
   DEFERRED_FOLLOW_UP_LATER = 'Deferred - Follow Up Later',
   INFORMATION_COLLECTION_PENDING = 'Information Collection Pending',
+  // Qualification
   TECHNICAL_FEASIBILITY_UNDER_REVIEW = 'Technical Feasibility Under Review',
   COMMERCIAL_QUALIFICATION = 'Commercial Qualification',
   QUALIFIED_LEAD = 'Qualified Lead',
+  // Sales Stage
+  PROPOSAL_SENT = 'Proposal Sent',
+  NEGOTIATION = 'Negotiation',
+  CONTRACT_SENT = 'Contract Sent',
+  // Outcome
+  WON = 'Won',
+  LOST = 'Lost',
   DISQUALIFIED_NURTURE = 'Disqualified / Nurture'
 }
 
@@ -177,16 +187,26 @@ export const INDIAN_STATES = [
 ] as const;
 
 export const LEAD_STATUS_ORDER = [
+  // Early Stage
   LeadStatus.NEW_LEAD,
   LeadStatus.INITIAL_ASSESSMENT,
   LeadStatus.FIRST_CONTACT_ATTEMPTED,
   LeadStatus.CUSTOMER_INTERACTION_COMPLETED,
   LeadStatus.IN_PERSON_MEETING_REQUESTED,
+  // Hold/Defer
   LeadStatus.DEFERRED_FOLLOW_UP_LATER,
   LeadStatus.INFORMATION_COLLECTION_PENDING,
+  // Qualification
   LeadStatus.TECHNICAL_FEASIBILITY_UNDER_REVIEW,
   LeadStatus.COMMERCIAL_QUALIFICATION,
   LeadStatus.QUALIFIED_LEAD,
+  // Sales Stage
+  LeadStatus.PROPOSAL_SENT,
+  LeadStatus.NEGOTIATION,
+  LeadStatus.CONTRACT_SENT,
+  // Outcome
+  LeadStatus.WON,
+  LeadStatus.LOST,
   LeadStatus.DISQUALIFIED_NURTURE
 ];
 

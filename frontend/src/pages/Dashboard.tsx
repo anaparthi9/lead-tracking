@@ -75,11 +75,12 @@ export default function Dashboard() {
       const leadsResponse = await leadAPI.getAll({ limit: 1000 });
       const allLeads = leadsResponse.data;
 
-      // Calculate stats - Using new 11-stage qualification model
-      const activeLeads = allLeads.filter(l => l.lead_status !== LeadStatus.DISQUALIFIED_NURTURE);
-      const hotLeads = allLeads.filter(l => l.temperature === LeadTemperature.HOT && l.lead_status !== LeadStatus.DISQUALIFIED_NURTURE);
-      const qualifiedLeads = allLeads.filter(l => l.lead_status === LeadStatus.QUALIFIED_LEAD);
-      const disqualifiedLeads = allLeads.filter(l => l.lead_status === LeadStatus.DISQUALIFIED_NURTURE);
+      // Calculate stats - Using 16-stage complete sales cycle model
+      const closedStatuses = [LeadStatus.WON, LeadStatus.LOST, LeadStatus.DISQUALIFIED_NURTURE];
+      const activeLeads = allLeads.filter(l => !closedStatuses.includes(l.lead_status as LeadStatus));
+      const hotLeads = allLeads.filter(l => l.temperature === LeadTemperature.HOT && !closedStatuses.includes(l.lead_status as LeadStatus));
+      const wonLeads = allLeads.filter(l => l.lead_status === LeadStatus.WON);
+      const lostLeads = allLeads.filter(l => l.lead_status === LeadStatus.LOST || l.lead_status === LeadStatus.DISQUALIFIED_NURTURE);
       const totalValue = activeLeads.reduce((sum, l) => sum + (l.deal_size_estimate || 0), 0);
       const avgScore = activeLeads.length > 0
         ? Math.round(activeLeads.reduce((sum, l) => sum + l.lead_score, 0) / activeLeads.length)
@@ -90,8 +91,8 @@ export default function Dashboard() {
         pipelineValue: totalValue,
         hotLeads: hotLeads.length,
         avgScore,
-        wonDeals: qualifiedLeads.length,
-        lostDeals: disqualifiedLeads.length,
+        wonDeals: wonLeads.length,
+        lostDeals: lostLeads.length,
       });
 
       // Calculate pipeline data

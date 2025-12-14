@@ -100,16 +100,26 @@ export default function Pipeline() {
 
   const getStatusColor = (status: LeadStatus) => {
     const colors: Record<string, string> = {
+      // Early Stage
       'New Lead': '#E8F5E9',
       'Initial Assessment': '#E3F2FD',
       'First Contact Attempted': '#FFF8E1',
       'Customer Interaction Completed': '#E1F5FE',
       'In-person Meeting Requested': '#F3E5F5',
+      // Hold/Defer
       'Deferred - Follow Up Later': '#FFF3E0',
       'Information Collection Pending': '#E0F2F1',
+      // Qualification
       'Technical Feasibility Under Review': '#FCE4EC',
       'Commercial Qualification': '#E8EAF6',
       'Qualified Lead': '#C8E6C9',
+      // Sales Stage
+      'Proposal Sent': '#E1BEE7',
+      'Negotiation': '#BBDEFB',
+      'Contract Sent': '#B2DFDB',
+      // Outcome
+      'Won': '#A5D6A7',
+      'Lost': '#FFCDD2',
       'Disqualified / Nurture': '#FFEBEE',
     };
     return colors[status] || '#F5F6F7';

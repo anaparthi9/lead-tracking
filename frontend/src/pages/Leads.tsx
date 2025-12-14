@@ -116,18 +116,24 @@ export default function Leads() {
       const allLeads = response.data;
       setAllLeadsForStats(allLeads);
 
+      // Closed statuses (not in active pipeline)
+      const closedStatuses = [LeadStatus.WON, LeadStatus.LOST, LeadStatus.DISQUALIFIED_NURTURE];
+
       // Calculate KPIs
       setStats({
         totalLeads: allLeads.length,
         newLeads: allLeads.filter(l => l.lead_status === LeadStatus.NEW_LEAD).length,
-        activeLeads: allLeads.filter(l => l.lead_status !== LeadStatus.DISQUALIFIED_NURTURE).length,
-        hotLeads: allLeads.filter(l => l.temperature === LeadTemperature.HOT).length,
-        qualifiedLeads: allLeads.filter(l => l.lead_status === LeadStatus.QUALIFIED_LEAD).length,
-        disqualifiedLeads: allLeads.filter(l => l.lead_status === LeadStatus.DISQUALIFIED_NURTURE).length,
+        activeLeads: allLeads.filter(l => !closedStatuses.includes(l.lead_status as LeadStatus)).length,
+        hotLeads: allLeads.filter(l => l.temperature === LeadTemperature.HOT && !closedStatuses.includes(l.lead_status as LeadStatus)).length,
+        qualifiedLeads: allLeads.filter(l => l.lead_status === LeadStatus.WON).length,
+        disqualifiedLeads: allLeads.filter(l => l.lead_status === LeadStatus.LOST || l.lead_status === LeadStatus.DISQUALIFIED_NURTURE).length,
         inProgressLeads: allLeads.filter(l =>
           l.lead_status === LeadStatus.FIRST_CONTACT_ATTEMPTED ||
           l.lead_status === LeadStatus.CUSTOMER_INTERACTION_COMPLETED ||
-          l.lead_status === LeadStatus.TECHNICAL_FEASIBILITY_UNDER_REVIEW
+          l.lead_status === LeadStatus.TECHNICAL_FEASIBILITY_UNDER_REVIEW ||
+          l.lead_status === LeadStatus.PROPOSAL_SENT ||
+          l.lead_status === LeadStatus.NEGOTIATION ||
+          l.lead_status === LeadStatus.CONTRACT_SENT
         ).length,
         pendingFollowUp: allLeads.filter(l =>
           l.lead_status === LeadStatus.DEFERRED_FOLLOW_UP_LATER ||
@@ -196,16 +202,26 @@ export default function Leads() {
 
   const getStatusColor = (status: LeadStatus): 'default' | 'primary' | 'secondary' | 'success' | 'error' | 'warning' | 'info' => {
     const colors: Record<string, 'default' | 'primary' | 'secondary' | 'success' | 'error' | 'warning' | 'info'> = {
+      // Early Stage
       'New Lead': 'info',
       'Initial Assessment': 'primary',
       'First Contact Attempted': 'warning',
       'Customer Interaction Completed': 'info',
       'In-person Meeting Requested': 'secondary',
+      // Hold/Defer
       'Deferred - Follow Up Later': 'warning',
       'Information Collection Pending': 'default',
+      // Qualification
       'Technical Feasibility Under Review': 'secondary',
       'Commercial Qualification': 'primary',
       'Qualified Lead': 'success',
+      // Sales Stage
+      'Proposal Sent': 'secondary',
+      'Negotiation': 'primary',
+      'Contract Sent': 'info',
+      // Outcome
+      'Won': 'success',
+      'Lost': 'error',
       'Disqualified / Nurture': 'error',
     };
     return colors[status] || 'default';
@@ -374,7 +390,7 @@ export default function Leads() {
                     {stats.qualifiedLeads}
                   </Typography>
                   <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.8)' }}>
-                    Qualified
+                    Won Deals
                   </Typography>
                 </Box>
                 <CheckCircleIcon sx={{ fontSize: 40, color: 'rgba(255,255,255,0.3)' }} />
@@ -391,7 +407,7 @@ export default function Leads() {
                     {stats.disqualifiedLeads}
                   </Typography>
                   <Typography variant="body2" sx={{ color: 'rgba(0,0,0,0.6)' }}>
-                    Disqualified / Nurture
+                    Lost / Disqualified
                   </Typography>
                 </Box>
                 <CancelIcon sx={{ fontSize: 40, color: 'rgba(0,0,0,0.15)' }} />
