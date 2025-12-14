@@ -61,13 +61,13 @@ import {
 
 interface KPIStats {
   totalLeads: number;
-  newLeads: number;
-  activeLeads: number;
-  hotLeads: number;
-  qualifiedLeads: number;
-  disqualifiedLeads: number;
-  inProgressLeads: number;
-  pendingFollowUp: number;
+  earlyStage: number;      // Stages 1-5: New Lead → In-person Meeting Requested
+  holdStage: number;       // Stages 6-7: Deferred, Info Collection Pending
+  qualification: number;   // Stages 8-10: Tech Review, Commercial, Qualified Lead
+  salesStage: number;      // Stages 11-13: Proposal Sent, Negotiation, Contract Sent
+  won: number;             // Stage 14: Won
+  lost: number;            // Stage 15: Lost
+  disqualified: number;    // Stage 16: Disqualified / Nurture
 }
 
 export default function Leads() {
@@ -81,13 +81,13 @@ export default function Leads() {
   const [showFilters, setShowFilters] = useState(false);
   const [stats, setStats] = useState<KPIStats>({
     totalLeads: 0,
-    newLeads: 0,
-    activeLeads: 0,
-    hotLeads: 0,
-    qualifiedLeads: 0,
-    disqualifiedLeads: 0,
-    inProgressLeads: 0,
-    pendingFollowUp: 0,
+    earlyStage: 0,
+    holdStage: 0,
+    qualification: 0,
+    salesStage: 0,
+    won: 0,
+    lost: 0,
+    disqualified: 0,
   });
   const [filters, setFilters] = useState({
     lead_status: '',
@@ -114,29 +114,38 @@ export default function Leads() {
       const response = await leadAPI.getAll({ limit: 10000 });
       const allLeads = response.data;
 
-      // Closed statuses (not in active pipeline)
-      const closedStatuses = [LeadStatus.WON, LeadStatus.LOST, LeadStatus.DISQUALIFIED_NURTURE];
-
-      // Calculate KPIs
+      // Calculate KPIs by category
       setStats({
         totalLeads: allLeads.length,
-        newLeads: allLeads.filter(l => l.lead_status === LeadStatus.NEW_LEAD).length,
-        activeLeads: allLeads.filter(l => !closedStatuses.includes(l.lead_status as LeadStatus)).length,
-        hotLeads: allLeads.filter(l => l.temperature === LeadTemperature.HOT && !closedStatuses.includes(l.lead_status as LeadStatus)).length,
-        qualifiedLeads: allLeads.filter(l => l.lead_status === LeadStatus.WON).length,
-        disqualifiedLeads: allLeads.filter(l => l.lead_status === LeadStatus.LOST || l.lead_status === LeadStatus.DISQUALIFIED_NURTURE).length,
-        inProgressLeads: allLeads.filter(l =>
+        // Early Stage (1-5): New Lead, Initial Assessment, First Contact, Customer Interaction, In-person Meeting
+        earlyStage: allLeads.filter(l =>
+          l.lead_status === LeadStatus.NEW_LEAD ||
+          l.lead_status === LeadStatus.INITIAL_ASSESSMENT ||
           l.lead_status === LeadStatus.FIRST_CONTACT_ATTEMPTED ||
           l.lead_status === LeadStatus.CUSTOMER_INTERACTION_COMPLETED ||
+          l.lead_status === LeadStatus.IN_PERSON_MEETING_REQUESTED
+        ).length,
+        // Hold Stage (6-7): Deferred, Information Collection Pending
+        holdStage: allLeads.filter(l =>
+          l.lead_status === LeadStatus.DEFERRED_FOLLOW_UP_LATER ||
+          l.lead_status === LeadStatus.INFORMATION_COLLECTION_PENDING
+        ).length,
+        // Qualification (8-10): Tech Feasibility, Commercial Qualification, Qualified Lead
+        qualification: allLeads.filter(l =>
           l.lead_status === LeadStatus.TECHNICAL_FEASIBILITY_UNDER_REVIEW ||
+          l.lead_status === LeadStatus.COMMERCIAL_QUALIFICATION ||
+          l.lead_status === LeadStatus.QUALIFIED_LEAD
+        ).length,
+        // Sales Stage (11-13): Proposal Sent, Negotiation, Contract Sent
+        salesStage: allLeads.filter(l =>
           l.lead_status === LeadStatus.PROPOSAL_SENT ||
           l.lead_status === LeadStatus.NEGOTIATION ||
           l.lead_status === LeadStatus.CONTRACT_SENT
         ).length,
-        pendingFollowUp: allLeads.filter(l =>
-          l.lead_status === LeadStatus.DEFERRED_FOLLOW_UP_LATER ||
-          l.lead_status === LeadStatus.INFORMATION_COLLECTION_PENDING
-        ).length,
+        // Outcome stages
+        won: allLeads.filter(l => l.lead_status === LeadStatus.WON).length,
+        lost: allLeads.filter(l => l.lead_status === LeadStatus.LOST).length,
+        disqualified: allLeads.filter(l => l.lead_status === LeadStatus.DISQUALIFIED_NURTURE).length,
       });
     } catch (error) {
       console.error('Failed to load stats:', error);
@@ -272,7 +281,7 @@ export default function Leads() {
         </Button>
       </Box>
 
-      {/* KPI Cards - 8 cards in 2 rows */}
+      {/* KPI Cards - 8 cards in 2 rows showing leads by pipeline category */}
       <Grid container spacing={2} sx={{ mb: 3 }}>
         {/* Row 1 */}
         <Grid item xs={6} sm={3}>
@@ -298,10 +307,13 @@ export default function Leads() {
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <Box>
                   <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'white' }}>
-                    {stats.newLeads}
+                    {stats.earlyStage}
                   </Typography>
                   <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.8)' }}>
-                    New Leads
+                    Early Stage
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.6)' }}>
+                    New to Meeting
                   </Typography>
                 </Box>
                 <TrendingUpIcon sx={{ fontSize: 40, color: 'rgba(255,255,255,0.3)' }} />
@@ -315,13 +327,16 @@ export default function Leads() {
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <Box>
                   <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'white' }}>
-                    {stats.hotLeads}
+                    {stats.holdStage}
                   </Typography>
                   <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.8)' }}>
-                    Hot Leads
+                    On Hold
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.6)' }}>
+                    Deferred / Pending
                   </Typography>
                 </Box>
-                <WhatshotIcon sx={{ fontSize: 40, color: 'rgba(255,255,255,0.3)' }} />
+                <ScheduleIcon sx={{ fontSize: 40, color: 'rgba(255,255,255,0.3)' }} />
               </Box>
             </CardContent>
           </Card>
@@ -332,10 +347,13 @@ export default function Leads() {
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <Box>
                   <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'white' }}>
-                    {stats.activeLeads}
+                    {stats.qualification}
                   </Typography>
                   <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.8)' }}>
-                    Active Leads
+                    Qualification
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.6)' }}>
+                    Tech & Commercial
                   </Typography>
                 </Box>
                 <BusinessIcon sx={{ fontSize: 40, color: 'rgba(255,255,255,0.3)' }} />
@@ -351,30 +369,16 @@ export default function Leads() {
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <Box>
                   <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'white' }}>
-                    {stats.inProgressLeads}
+                    {stats.salesStage}
                   </Typography>
                   <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.8)' }}>
-                    In Progress
+                    Sales Stage
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.6)' }}>
+                    Proposal to Contract
                   </Typography>
                 </Box>
-                <ScheduleIcon sx={{ fontSize: 40, color: 'rgba(255,255,255,0.3)' }} />
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={6} sm={3}>
-          <Card sx={{ height: '100%', background: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)' }}>
-            <CardContent sx={{ py: 2 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <Box>
-                  <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#333' }}>
-                    {stats.pendingFollowUp}
-                  </Typography>
-                  <Typography variant="body2" sx={{ color: 'rgba(0,0,0,0.6)' }}>
-                    Pending Follow-up
-                  </Typography>
-                </Box>
-                <PhoneIcon sx={{ fontSize: 40, color: 'rgba(0,0,0,0.15)' }} />
+                <WhatshotIcon sx={{ fontSize: 40, color: 'rgba(255,255,255,0.3)' }} />
               </Box>
             </CardContent>
           </Card>
@@ -385,7 +389,7 @@ export default function Leads() {
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <Box>
                   <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'white' }}>
-                    {stats.qualifiedLeads}
+                    {stats.won}
                   </Typography>
                   <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.8)' }}>
                     Won Deals
@@ -397,18 +401,35 @@ export default function Leads() {
           </Card>
         </Grid>
         <Grid item xs={6} sm={3}>
-          <Card sx={{ height: '100%', background: 'linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)' }}>
+          <Card sx={{ height: '100%', background: 'linear-gradient(135deg, #ff6b6b 0%, #ee5a5a 100%)' }}>
+            <CardContent sx={{ py: 2 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <Box>
+                  <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'white' }}>
+                    {stats.lost}
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.8)' }}>
+                    Lost Deals
+                  </Typography>
+                </Box>
+                <CancelIcon sx={{ fontSize: 40, color: 'rgba(255,255,255,0.3)' }} />
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={6} sm={3}>
+          <Card sx={{ height: '100%', background: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)' }}>
             <CardContent sx={{ py: 2 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <Box>
                   <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#333' }}>
-                    {stats.disqualifiedLeads}
+                    {stats.disqualified}
                   </Typography>
                   <Typography variant="body2" sx={{ color: 'rgba(0,0,0,0.6)' }}>
-                    Lost / Disqualified
+                    Disqualified / Nurture
                   </Typography>
                 </Box>
-                <CancelIcon sx={{ fontSize: 40, color: 'rgba(0,0,0,0.15)' }} />
+                <PhoneIcon sx={{ fontSize: 40, color: 'rgba(0,0,0,0.15)' }} />
               </Box>
             </CardContent>
           </Card>
