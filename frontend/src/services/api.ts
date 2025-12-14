@@ -116,11 +116,33 @@ export const leadAPI = {
 
     if (leadError) throw leadError;
 
-    // Get contacts
-    const { data: contacts } = await supabase
+    // Get contacts with emails and phones
+    const { data: contactsRaw } = await supabase
       .from('lead_contacts')
       .select('*')
       .eq('lead_id', id);
+
+    // Fetch emails and phones for each contact
+    const contacts: LeadContact[] = [];
+    if (contactsRaw) {
+      for (const contact of contactsRaw) {
+        const { data: emails } = await supabase
+          .from('contact_emails')
+          .select('*')
+          .eq('contact_id', contact.id);
+
+        const { data: phones } = await supabase
+          .from('contact_phones')
+          .select('*')
+          .eq('contact_id', contact.id);
+
+        contacts.push({
+          ...contact,
+          emails: emails || [],
+          phones: phones || [],
+        });
+      }
+    }
 
     // Get history
     const { data: history } = await supabase

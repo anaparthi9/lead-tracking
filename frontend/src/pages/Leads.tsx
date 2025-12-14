@@ -369,15 +369,15 @@ export default function Leads() {
               <TableHead>
                 <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
                   <TableCell sx={{ fontWeight: 'bold' }}>Company</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold' }}>Location</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold' }}>Industry</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold' }}>City</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold' }}>State</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold' }}>Industry / Sector</TableCell>
                   <TableCell sx={{ fontWeight: 'bold' }}>Status</TableCell>
                   <TableCell sx={{ fontWeight: 'bold' }} align="center">Temp</TableCell>
                   <TableCell sx={{ fontWeight: 'bold' }} align="center">Grade</TableCell>
                   <TableCell sx={{ fontWeight: 'bold' }} align="right">Consumption</TableCell>
                   <TableCell sx={{ fontWeight: 'bold' }} align="right">Deal Size</TableCell>
                   <TableCell sx={{ fontWeight: 'bold' }}>Source</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold' }}>Assigned To</TableCell>
                   <TableCell sx={{ fontWeight: 'bold' }} align="center">Actions</TableCell>
                 </TableRow>
               </TableHead>
@@ -407,9 +407,10 @@ export default function Leads() {
                         )}
                       </TableCell>
                       <TableCell>
-                        <Typography variant="body2">
-                          {[lead.city, lead.state].filter(Boolean).join(', ') || '-'}
-                        </Typography>
+                        <Typography variant="body2">{lead.city || '-'}</Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2">{lead.state || '-'}</Typography>
                       </TableCell>
                       <TableCell>
                         <Typography variant="body2">{lead.industry_sector || '-'}</Typography>
@@ -454,11 +455,6 @@ export default function Leads() {
                       </TableCell>
                       <TableCell>
                         <Typography variant="body2">{lead.lead_source || '-'}</Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="body2">
-                          {lead.assigned_user_name || 'Unassigned'}
-                        </Typography>
                       </TableCell>
                       <TableCell align="center" onClick={(e) => e.stopPropagation()}>
                         <IconButton
