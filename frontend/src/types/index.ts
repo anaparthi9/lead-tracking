@@ -190,9 +190,9 @@ export interface User {
   id: string;
   email: string;
   name: string;
-  role: UserRole;
+  role: string;
   region?: string;
-  is_active: boolean;
+  is_active?: boolean;
 }
 
 // Contact Email
@@ -366,6 +366,7 @@ export interface CreateLeadRequest {
   deal_size_estimate?: number;
   preferred_model?: PreferredModel;
   temperature?: LeadTemperature;
+  lead_status?: LeadStatus;
   assigned_to?: string;
   contacts?: Omit<LeadContact, 'id' | 'lead_id' | 'created_at'>[];
 }
@@ -401,24 +402,14 @@ export interface CreateTaskRequest {
 
 export interface DashboardSummary {
   total_leads: number;
-  total_pipeline_value: number;
+  hot_leads: number;
+  warm_leads: number;
+  cold_leads: number;
+  qualified_leads: number;
+  pipeline_value: number;
   avg_lead_score: number;
-  leads_by_status: Array<{
-    lead_status: LeadStatus;
-    count: number;
-    total_value: number;
-  }>;
-  leads_by_temperature: Array<{
-    temperature: LeadTemperature;
-    count: number;
-  }>;
-  leads_by_source: Array<{
-    lead_source: string;
-    count: number;
-  }>;
-  recent_activities: Activity[];
-  overdue_tasks: Task[];
-  upcoming_tasks: Task[];
+  won_deals: number;
+  lost_deals: number;
 }
 
 export interface PipelineSummary {
@@ -447,7 +438,7 @@ export interface PaginationInfo {
   page: number;
   limit: number;
   total: number;
-  pages: number;
+  totalPages: number;
 }
 
 // =====================================================
