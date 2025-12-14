@@ -1,0 +1,11 @@
+Sr No,Company Name,Industry,Location,RE Consumption,Capacity (MW),Status,Model
+1,Sun Pharmaceutical Industries,Pharmaceuticals,Mumbai,Solar + Storage,9.5,Active,EPC
+2,Tata Steel,Steel Manufacturing,Jamshedpur,Solar + Wind,25.0,Active,RESCO
+3,Reliance Industries,Oil & Gas,Mumbai,Solar + Storage + Wind,50.0,Active,CAPEX
+4,Infosys,IT Services,Bangalore,Solar,15.0,Active,EPC
+5,Wipro,IT Services,Bangalore,Solar + Storage,12.0,Active,RESCO
+6,Asian Paints,Chemicals,Mumbai,Solar,8.0,Active,EPC
+7,Mahindra & Mahindra,Automotive,Pune,Solar + Wind,20.0,Active,RESCO
+8,Dr. Reddy's Laboratories,Pharmaceuticals,Hyderabad,Solar,10.0,Active,EPC
+9,Bajaj Auto,Automotive,Pune,Solar,7.5,Active,EPC
+10,ITC Limited,FMCG,Kolkata,Solar + Storage,18.0,Active,CAPEX
